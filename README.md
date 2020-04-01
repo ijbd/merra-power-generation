@@ -34,7 +34,7 @@ File should be in netCDf format:
   - Additional System Advisory Model parameters should be set in the respective run_solar and run_wind functions. 
 
 3. COMMAND LINE INSTRUCTION
-  - First, change the functionality of the shell script to allow execution
+  - First, change the the shell script permissions to allow execution
 
     chmod a+rx powGen.sh
 
