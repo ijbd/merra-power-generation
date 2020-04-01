@@ -9,12 +9,13 @@ How to use:
 
 The file containing MERRA 2 data needs to be formatted in a particular fashion. (See additional scripts from jflorez)
 File should be in netCDf format:
-  dimensions
+
+ Dimensions:
   - coordinate (latLong) -- coordinate should be written lat0lon0, lat0lon1, lat0lon2...
   - hour of day (time) size 24
   - day of year (yearDayIndex)
 
- variables
+ Variables:
   - from MERRA_2_tavg1_2d_rad_Nx
     - SWGDN
   - from MERRA_2_tavg1_2d_slv_Nx
