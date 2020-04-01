@@ -1,4 +1,5 @@
 PowGen
+=====
 
 This program was written in order to simulate solar and wind power generation at a large scale using the National Renewable Energy Laboratory's System Advisory Model. This program is designed to use weather data acquired from NASA Modern-Era Retrospective analysis for Research and Applications (MERRA) 2 dataset. Using the Sandia National Laboratory PVlib Python module, the MERRA data is processed then run through SAM for wind and solar parameters defined by the user in Power_Generation_.8.py 
 
