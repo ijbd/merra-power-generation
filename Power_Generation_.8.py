@@ -276,7 +276,7 @@ def main():
     num_lons =  1 #31
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
-    destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/2018_west_coast_power_generation/'  #destination for power generation files
+    destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/powGen_wind_debug/'  #destination for power generation files
     ###############################################
 
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
