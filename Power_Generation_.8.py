@@ -36,7 +36,7 @@ import os, sys, datetime
 from netCDF4 import Dataset
 import csv
 import math
-import PySAM.Pvwattsv5 as pv
+import PySAM.Pvwattsv7 as pv
 import pandas as pd
 import pvlib
 import PySAM.Windpower as wp
@@ -239,15 +239,15 @@ def run_wp(csv_name, file_path):
     d = wp.default("WindPowerNone")
     
     ##### Parameters #######
-    d.wind_resource_model_choice = 0
-    d.WindTurbine.wind_resource_shear = .15
-    d.WindTurbine.wind_turbine_rotor_diameter = 108
-    d.WindTurbine.wind_turbine_hub_ht = 80
+    d.Resource.wind_resource_filename = file_path + csv_name
+    d.Resource.wind_resource_model_choice = 0
+    d.Turbine.wind_resource_shear = .15
+    d.Turbine.wind_turbine_rotor_diameter = 108
+    d.Turbine.wind_turbine_hub_ht = 80
     d.WindFarm.system_capacity = 1000   # System Capacity (kW)
     d.WindTurbine.calculate_powercurve()
-    
     ########################
-    d.WindResourceFile.wind_resource_filename = file_path + csv_name
+    
     d.execute()
     print("wind cf", d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.gen) / 1000.
