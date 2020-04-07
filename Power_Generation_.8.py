@@ -229,7 +229,7 @@ def run_solar(csv_name, file_path):
     ########################
     d.LocationAndResource.solar_resource_file = file_path + csv_name
     d.execute()
-    output_ac = np.array(d.Outputs.ac)
+    output_ac = np.array(d.Outputs.ac) / 1000000.
     
     return output_ac
 
@@ -238,13 +238,15 @@ def run_wp(csv_name, file_path):
     d = wp.default("WindPowerNone")
     
     ##### Parameters #######
+    d.wind_resource_model_choice = 0
     d.WindTurbine.wind_turbine_hub_ht = 80
     d.WindFarm.system_capacity = 1000   # System Capacity (kW)
     
     ########################
     d.WindResourceFile.wind_resource_filename = file_path + csv_name
     d.execute()
-    output_ac = np.array(d.Outputs.gen)
+    print("cf", d.Outputs.capacity_factor)
+    output_ac = np.array(d.Outputs.gen) / 1000.
     
     return output_ac
 
@@ -271,7 +273,7 @@ def main():
     start_lat = 31.5
     start_lon = -125
     num_lats = 37
-    num_lons = 31
+    num_lons =  1 #31
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
     destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/2018_west_coast_power_generation/'  #destination for power generation files
