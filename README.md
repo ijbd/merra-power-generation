@@ -1,4 +1,5 @@
 PowGen
+=====
 
 This program was written in order to simulate solar and wind power generation at a large scale using the National Renewable Energy Laboratory's System Advisory Model. This program is designed to use weather data acquired from NASA Modern-Era Retrospective analysis for Research and Applications (MERRA) 2 dataset. Using the Sandia National Laboratory PVlib Python module, the MERRA data is processed then run through SAM for wind and solar parameters defined by the user in Power_Generation_.8.py 
 
@@ -8,13 +9,13 @@ How to use:
 
 The file containing MERRA 2 data needs to be formatted in a particular fashion. (See additional scripts from jflorez)
 File should be in netCDf format:
-  dimensions
-    - coordinate (latLong)
-      - coordinate should be written lat0lon0, lat0lon1, lat0lon2...
-    - hour of day (time) size 24
-    - day of year (yearDayIndex)
 
- variables
+ Dimensions:
+  - coordinate (latLong) -- coordinate should be written lat0lon0, lat0lon1, lat0lon2...
+  - hour of day (time) size 24
+  - day of year (yearDayIndex)
+
+ Variables:
   - from MERRA_2_tavg1_2d_rad_Nx
     - SWGDN
   - from MERRA_2_tavg1_2d_slv_Nx
@@ -33,7 +34,7 @@ File should be in netCDf format:
   - Additional System Advisory Model parameters should be set in the respective run_solar and run_wind functions. 
 
 3. COMMAND LINE INSTRUCTION
-  - First, change the functionality of the shell script to allow execution
+  - First, change the the shell script permissions to allow execution
 
     chmod a+rx powGen.sh
 
