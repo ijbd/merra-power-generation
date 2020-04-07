@@ -229,6 +229,7 @@ def run_solar(csv_name, file_path):
     ########################
     d.LocationAndResource.solar_resource_file = file_path + csv_name
     d.execute()
+    print("solar cf", d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.ac) / 1000000.
     
     return output_ac
@@ -239,13 +240,16 @@ def run_wp(csv_name, file_path):
     
     ##### Parameters #######
     d.wind_resource_model_choice = 0
+    d.WindTurbine.wind_resource_shear = .15
+    d.WindTurbine.wind_turbine_rotor_diameter = 108
     d.WindTurbine.wind_turbine_hub_ht = 80
     d.WindFarm.system_capacity = 1000   # System Capacity (kW)
+    d.WindTurbine.calculate_powercurve()
     
     ########################
     d.WindResourceFile.wind_resource_filename = file_path + csv_name
     d.execute()
-    print("cf", d.Outputs.capacity_factor)
+    print("wind cf", d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.gen) / 1000.
     
     return output_ac
