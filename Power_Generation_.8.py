@@ -220,21 +220,21 @@ def write_2srw(srw_name, temperature, pressure, windSpeed2, windSpeed10, windSpe
 
 
 def run_solar(csv_name, file_path, latitude):
-    d = pv.default("PVWattsNone")
+    s = pv.default("PVWattsNone")
     
     ##### Parameters #######
-    d.SolarResource.solar_resource_file = file_path + csv_name
-    d.SystemDesign.system_capacity = 1000   # System Capacity (kW)
-    d.SystemDesign.array_type = 0
-    d.SystemDesign.azimuth = 180
-    d.SystemDesign.losses = 0
-    d.SystemDesign.tilt = abs(latitude)
+    s.SolarResource.solar_resource_file = file_path + csv_name
+    s.SystemDesign.array_type = 0
+    s.SystemDesign.azimuth = 180
+    s.SystemDesign.losses = .01
+    s.SystemDesign.tilt = 20 #abs(latitude)
+    s.SystemDesign.system_capacity = 1000   # System Capacity (kW)
 
     ########################
     
-    d.execute()
-    print("solar cf", d.Outputs.capacity_factor, d.Outputs.annual_energy)
-    output_ac = np.array(d.Outputs.ac) / 1000000.
+    s.execute()
+    print("solar cf", s.Outputs.capacity_factor, s.Outputs.ac_annual)
+    output_ac = np.array(s.Outputs.ac) / 1000000.
     
     return output_ac
 
