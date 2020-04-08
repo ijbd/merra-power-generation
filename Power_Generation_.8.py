@@ -244,7 +244,7 @@ def run_solar(csv_name, latitude):
     return output_ac
 
 
-def run_wp(csv_name, file_path, power_curve_speed, power_curve_out):
+def run_wp(csv_name, power_curve_speed, power_curve_out):
     d = wp.default("WindPowerNone")
     
     ##### Parameters #######
