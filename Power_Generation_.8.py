@@ -64,9 +64,9 @@ def create_netCDF_files(year, lats, lons, destination):
     lat = solar.createDimension("lat",lats.size)
     lon = solar.createDimension("lon",lons.size)
     hour = solar.createDimension("hour", 8760)
-    solar_ac = solar.createVariable("ac","i4",("lat","lon","hour",))
-    latitude = solar.createVariable("lat", "i4",("lat",))
-    longitude = solar.createVariable("lon", "i4",("lon",))
+    solar_ac = solar.createVariable("ac","f4",("lat","lon","hour",))
+    latitude = solar.createVariable("lat", "f4",("lat",))
+    longitude = solar.createVariable("lon", "f4",("lon",))
     latitude[:] = lats
     longitude[:] = lons
     solar.close()
@@ -77,9 +77,9 @@ def create_netCDF_files(year, lats, lons, destination):
     lat = wind.createDimension("lat",lats.size)
     lon = wind.createDimension("lon",lons.size)
     hour = wind.createDimension("hour", 8760)
-    wind_ac = wind.createVariable("ac","i4",("lat","lon","hour",))
-    latitude = solar.createVariable("lat", "i4",("lat",))
-    longitude = solar.createVariable("lon", "i4",("lon",))
+    wind_ac = wind.createVariable("ac","f4",("lat","lon","hour",))
+    latitude = solar.createVariable("lat", "f4",("lat",))
+    longitude = solar.createVariable("lon", "f4",("lon",))
     latitude[:] = lats
     longitude[:] = lons
     wind.close()
@@ -238,9 +238,7 @@ def run_solar(csv_name, latitude):
     ########################
     
     s.execute()
-    print("Solar cf",s.Outputs.capacity_factor)
     output_ac = np.array(s.Outputs.ac) / 1000000.
-    print("Solar ac", output_ac[0:24])
     
     return output_ac
 
@@ -265,9 +263,7 @@ def run_wp(csv_name, power_curve_speed, power_curve_out):
     ########################
     
     d.execute()
-    print("Wind cf",d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.gen) / 1000.00
-    print("Wind ac",output_ac[0:24])
     
     return output_ac
 
