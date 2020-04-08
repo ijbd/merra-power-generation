@@ -219,15 +219,19 @@ def write_2srw(srw_name, temperature, pressure, windSpeed2, windSpeed10, windSpe
         csvfile.close()
 
 
-def run_solar(csv_name, file_path):
+def run_solar(csv_name, file_path, latitude):
     d = pv.default("PVWattsNone")
     
     ##### Parameters #######
-    
-    d.SystemDesign.system_capacity = 1000   # System Capacity (kW)
-    
-    ########################
     d.SolarResource.solar_resource_file = file_path + csv_name
+    d.SystemDesign.system_capacity = 1000   # System Capacity (kW)
+    d.SystemDesign.array_type = 0
+    d.SystemDesign.azimuth = 180
+    d.SystemDesign.losses = 0
+    d.SystemDesign.tilt = abs(latitude)
+
+    ########################
+    
     d.execute()
     print("solar cf", d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.ac) / 1000000.
@@ -244,8 +248,8 @@ def run_wp(csv_name, file_path):
     d.Turbine.wind_resource_shear = .15
     d.Turbine.wind_turbine_rotor_diameter = 108
     d.Turbine.wind_turbine_hub_ht = 80
-    d.WindFarm.system_capacity = 1000   # System Capacity (kW)
-    d.WindTurbine.calculate_powercurve()
+    d.Turbine.calculate_powercurve()
+    d.Farm.system_capacity = 1000   # System Capacity (kW)
     ########################
     
     d.execute()
@@ -315,7 +319,7 @@ def main():
             month, day = get_date(jd + 1)
             dni, dhi = get_dni_dhi(year, jd + 1, month, day, lat[latitude], lon[longitude], ghi[(jd)*24:(jd+1)*24]) #disc model
             write_day2csv(csv_name, year, month, day, lat[latitude], lon[longitude], dni, dhi, windSpeed2[(jd)*24:(jd+1)*24], temperature[(jd)*24:(jd+1)*24])
-        solar_outputs = run_solar(csv_name, './')
+        solar_outputs = run_solar(csv_name, './', lat[latitude])
         wind_outputs = run_wp(srw_name, './')
         
         os.remove(csv_name)
