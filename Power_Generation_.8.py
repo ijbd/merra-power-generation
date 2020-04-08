@@ -51,6 +51,13 @@ def get_lat_lon(num_lats, num_lons, start_lat, start_lon):
     return lat, lon
 
 
+def get_power_curve(power_curve_file):
+    power_curve_speed = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[0]).values).tolist
+    power_curve_out = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values).tolist
+    return power_curve_speed, power_curve_out
+    
+
+
 def create_netCDF_files(year, lats, lons, destination):
     solar_name = destination + str(year) + "_solar_ac_generation.nc"
     solar = Dataset(solar_name, "w")
@@ -184,7 +191,6 @@ def get_date_time_index(year, month, day):
     return times
 
 
-
 def get_dni_dhi(year, jd, month, day, latitude, longitude, ghi):
     latitude_rads = latitude * 3.14159 / 180.0
     times = get_date_time_index(year, month, day)
@@ -219,14 +225,13 @@ def write_2srw(srw_name, temperature, pressure, windSpeed2, windSpeed10, windSpe
         csvfile.close()
 
 
-def run_solar(csv_name, file_path, latitude):
+def run_solar(csv_name, latitude):
     s = pv.default("PVWattsNone")
     
     ##### Parameters #######
-    s.SolarResource.solar_resource_file = file_path + csv_name
+    s.SolarResource.solar_resource_file = "./" + csv_name
     s.SystemDesign.array_type = 0
     s.SystemDesign.azimuth = 180
-    #s.SystemDesign.losses = .01
     s.SystemDesign.tilt = abs(latitude)
     s.SystemDesign.system_capacity = 1000   # System Capacity (kW)
 
@@ -239,16 +244,20 @@ def run_solar(csv_name, file_path, latitude):
     return output_ac
 
 
-def run_wp(csv_name, file_path):
+def run_wp(csv_name, file_path, power_curve_speed, power_curve_out):
     d = wp.default("WindPowerNone")
     
     ##### Parameters #######
-    d.Resource.wind_resource_filename = file_path + csv_name
+    ##### based on the Mitsubishi MWT 1000A ######
+    d.Resource.wind_resource_filename = "./" + csv_name
     d.Resource.wind_resource_model_choice = 0
-    d.Turbine.wind_resource_shear = .15
-    d.Turbine.wind_turbine_rotor_diameter = 108
+    d.Turbine.wind_resource_shear = .14
+    d.Turbine.wind_turbine_powercurve_powerout = power_curve_out
+    d.Turbine.wind_turbine_powercurve_windspeeds = power_curve_speed
+    d.Turbine.wind_turbine_rotor_diameter = 61.4
     d.Turbine.wind_turbine_hub_ht = 80
     d.Farm.system_capacity = 1000   # System Capacity (kW)
+
     ########################
     
     d.execute()
@@ -284,6 +293,7 @@ def main():
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
     destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/powGen_wind_debug/'  #destination for power generation files
+    power_curve_file = './sample_power_curve.csv'
     ###############################################
 
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
@@ -304,6 +314,9 @@ def main():
             longitude = int(line) + 1
         l.close()
 
+    #get power curve for wind
+    power_curve_speed, power_curve_out = get_power_curve(power_curve_file)
+
     #simulate power generation for every latitude
     for latitude in range(lat.size):
         csv_name = create_csv(year, lat[latitude], lon[longitude])
@@ -318,8 +331,8 @@ def main():
             month, day = get_date(jd + 1)
             dni, dhi = get_dni_dhi(year, jd + 1, month, day, lat[latitude], lon[longitude], ghi[(jd)*24:(jd+1)*24]) #disc model
             write_day2csv(csv_name, year, month, day, lat[latitude], lon[longitude], dni, dhi, windSpeed2[(jd)*24:(jd+1)*24], temperature[(jd)*24:(jd+1)*24])
-        solar_outputs = run_solar(csv_name,"./", lat[latitude])
-        wind_outputs = run_wp(srw_name,"./")
+        solar_outputs = run_solar(csv_name, lat[latitude])
+        wind_outputs = run_wp(srw_name, power_curve_speed, power_curve_out)
         
         os.remove(csv_name)
         os.remove(srw_name)
