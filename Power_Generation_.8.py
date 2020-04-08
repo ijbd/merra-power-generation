@@ -238,6 +238,7 @@ def run_solar(csv_name, latitude):
     ########################
     
     s.execute()
+    print("Solar ac",s.Outputs.annual_ac)
     output_ac = np.array(s.Outputs.ac) / 1000000.
     
     return output_ac
@@ -263,7 +264,8 @@ def run_wp(csv_name, power_curve_speed, power_curve_out):
     ########################
     
     d.execute()
-    output_ac = np.array(d.Outputs.gen) / 1000.
+    print("Wind ac",d.Outputs.annual_ac)
+    output_ac = np.array(d.Outputs.gen) / 1000.00
     
     return output_ac
 
