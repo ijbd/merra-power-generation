@@ -233,7 +233,7 @@ def run_solar(csv_name, file_path, latitude):
     ########################
     
     d.execute()
-    print("solar cf", d.Outputs.capacity_factor)
+    print("solar cf", d.Outputs.capacity_factor, d.Outputs.annual_energy)
     output_ac = np.array(d.Outputs.ac) / 1000000.
     
     return output_ac
@@ -248,7 +248,6 @@ def run_wp(csv_name, file_path):
     d.Turbine.wind_resource_shear = .15
     d.Turbine.wind_turbine_rotor_diameter = 108
     d.Turbine.wind_turbine_hub_ht = 80
-    d.Turbine.calculate_powercurve()
     d.Farm.system_capacity = 1000   # System Capacity (kW)
     ########################
     
