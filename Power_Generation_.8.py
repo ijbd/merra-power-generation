@@ -227,7 +227,7 @@ def run_solar(csv_name, file_path):
     d.SystemDesign.system_capacity = 1000   # System Capacity (kW)
     
     ########################
-    d.LocationAndResource.solar_resource_file = file_path + csv_name
+    d.SolarResource.solar_resource_file = file_path + csv_name
     d.execute()
     print("solar cf", d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.ac) / 1000000.
