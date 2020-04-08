@@ -257,6 +257,9 @@ def run_wp(csv_name, power_curve_speed, power_curve_out):
     d.Turbine.wind_turbine_rotor_diameter = 61.4
     d.Turbine.wind_turbine_hub_ht = 80
     d.Farm.system_capacity = 1000   # System Capacity (kW)
+    d.Farm.wind_farm_wake_model = 0
+    d.wind_farm_xCoordinates = np.array([0])
+    d.wind_farm_yCoordinates = np.array([0])
 
     ########################
     
