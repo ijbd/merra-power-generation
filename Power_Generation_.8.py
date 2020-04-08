@@ -226,7 +226,7 @@ def run_solar(csv_name, file_path, latitude):
     s.SolarResource.solar_resource_file = file_path + csv_name
     s.SystemDesign.array_type = 0
     s.SystemDesign.azimuth = 180
-    s.SystemDesign.losses = .01
+    #s.SystemDesign.losses = .01
     s.SystemDesign.tilt = abs(latitude)
     s.SystemDesign.system_capacity = 1000   # System Capacity (kW)
 
@@ -279,7 +279,7 @@ def main():
     year = 2018
     start_lat = 31.5
     start_lon = -125
-    num_lats = 1 #37
+    num_lats = 37
     num_lons =  1 #31
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
