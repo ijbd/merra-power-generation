@@ -318,7 +318,8 @@ def main():
             month, day = get_date(jd + 1)
             dni, dhi = get_dni_dhi(year, jd + 1, month, day, lat[latitude], lon[longitude], ghi[(jd)*24:(jd+1)*24]) #disc model
             write_day2csv(csv_name, year, month, day, lat[latitude], lon[longitude], dni, dhi, windSpeed2[(jd)*24:(jd+1)*24], temperature[(jd)*24:(jd+1)*24])
-        solar_outputs = run_solar(csv_name, './', lat[latitude])
+        #solar_outputs = run_solar(csv_name, './', lat[latitude])
+        solar_outputs = run_solar("phoenix_az_33.450495_-111.983688_psmv3_60_tmy.csv","./", lat[latitude])
         wind_outputs = run_wp(srw_name, './')
         
         os.remove(csv_name)
