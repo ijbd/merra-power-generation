@@ -238,7 +238,6 @@ def run_solar(csv_name, latitude):
     ########################
     
     s.execute()
-    print("solar cf", s.Outputs.capacity_factor, s.Outputs.ac_annual)
     output_ac = np.array(s.Outputs.ac) / 1000000.
     
     return output_ac
@@ -264,7 +263,6 @@ def run_wp(csv_name, power_curve_speed, power_curve_out):
     ########################
     
     d.execute()
-    print("wind cf", d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.gen) / 1000.
     
     return output_ac
@@ -295,7 +293,7 @@ def main():
     num_lons =  31
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
-    destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/powGen_wind_debug/'  #destination for power generation files
+    destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/2018_wecc_VRE_cf/'  #destination for power generation files
     power_curve_file = './sample_power_curve.csv'
     ###############################################
 

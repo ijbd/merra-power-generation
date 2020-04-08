@@ -11,5 +11,6 @@ do
     python checkForFinish.py
     x=$?
 done
+rm ./log.txt
 echo "PowGen complete"
     
