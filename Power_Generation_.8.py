@@ -84,7 +84,7 @@ def create_csv(year, latitude, longitude): #lat lon in degrees
     with open(csv_name, 'w', newline='') as csvfile:
         csvWriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         csvWriter.writerow(['Latitude']+['Longitude']+['Time Zone']+['Elevation'])
-        csvWriter.writerow([latitude]+[longitude]+[0]+[5000])
+        csvWriter.writerow([latitude]+[longitude]+[0]+['?'])
         csvWriter.writerow(['Year']+['Month']+['Day']+['Hour']+['DNI']+['DHI']+['Wind Speed']+['Temperature'])
         csvfile.close()
     return csv_name
@@ -279,7 +279,7 @@ def main():
     year = 2018
     start_lat = 31.5
     start_lon = -125
-    num_lats = 37
+    num_lats = 1 #37
     num_lons =  1 #31
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
