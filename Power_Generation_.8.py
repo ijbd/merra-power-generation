@@ -292,7 +292,7 @@ def main():
     start_lat = 31.5
     start_lon = -125
     num_lats = 37
-    num_lons =  1 #31
+    num_lons =  31
     file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear'                                                        #annual file name
     destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/powGen_wind_debug/'  #destination for power generation files
