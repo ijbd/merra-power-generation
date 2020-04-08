@@ -52,8 +52,8 @@ def get_lat_lon(num_lats, num_lons, start_lat, start_lon):
 
 
 def get_power_curve(power_curve_file):
-    power_curve_speed = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[0]).values).tolist
-    power_curve_out = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values).tolist
+    power_curve_speed = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[0]).values)
+    power_curve_out = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values)
     return power_curve_speed, power_curve_out
     
 
