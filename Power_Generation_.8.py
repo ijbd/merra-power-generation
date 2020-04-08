@@ -83,8 +83,8 @@ def create_csv(year, latitude, longitude): #lat lon in degrees
     csv_name = str(year) + '_' + str(latitude) + '_' + str(longitude) + '.csv'
     with open(csv_name, 'w', newline='') as csvfile:
         csvWriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-        csvWriter.writerow(['Latitude']+['Longitude']+['Time Zone'])
-        csvWriter.writerow([latitude]+[longitude]+[0])
+        csvWriter.writerow(['Latitude']+['Longitude']+['Time Zone']+['Elevation'])
+        csvWriter.writerow([latitude]+[longitude]+[0]+[5000])
         csvWriter.writerow(['Year']+['Month']+['Day']+['Hour']+['DNI']+['DHI']+['Wind Speed']+['Temperature'])
         csvfile.close()
     return csv_name
@@ -305,7 +305,8 @@ def main():
         l.close()
 
     #simulate power generation for every latitude
-    for latitude in range(lat.size):
+    #for latitude in range(lat.size):
+    for latitude in range(1):
         csv_name = create_csv(year, lat[latitude], lon[longitude])
         srw_name = create_srw(year, lat[latitude], lon[longitude])
         
@@ -319,8 +320,7 @@ def main():
             dni, dhi = get_dni_dhi(year, jd + 1, month, day, lat[latitude], lon[longitude], ghi[(jd)*24:(jd+1)*24]) #disc model
             write_day2csv(csv_name, year, month, day, lat[latitude], lon[longitude], dni, dhi, windSpeed2[(jd)*24:(jd+1)*24], temperature[(jd)*24:(jd+1)*24])
         solar_outputs = run_solar(csv_name,"./", lat[latitude])
-        #solar_outputs = run_solar("phoenix_az_33.450495_-111.983688_psmv3_60_tmy.csv","./", lat[latitude])
-        wind_outputs = run_wp(srw_name, './')
+        wind_outputs = run_wp(srw_name,"./")
         
         os.remove(csv_name)
         os.remove(srw_name)
