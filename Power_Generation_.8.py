@@ -227,7 +227,7 @@ def run_solar(csv_name, file_path, latitude):
     s.SystemDesign.array_type = 0
     s.SystemDesign.azimuth = 180
     s.SystemDesign.losses = .01
-    s.SystemDesign.tilt = 20 #abs(latitude)
+    s.SystemDesign.tilt = abs(latitude)
     s.SystemDesign.system_capacity = 1000   # System Capacity (kW)
 
     ########################
@@ -305,8 +305,7 @@ def main():
         l.close()
 
     #simulate power generation for every latitude
-    #for latitude in range(lat.size):
-    for latitude in range(1):
+    for latitude in range(lat.size):
         csv_name = create_csv(year, lat[latitude], lon[longitude])
         srw_name = create_srw(year, lat[latitude], lon[longitude])
         
