@@ -84,7 +84,7 @@ def create_csv(year, latitude, longitude): #lat lon in degrees
     with open(csv_name, 'w', newline='') as csvfile:
         csvWriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
         csvWriter.writerow(['Latitude']+['Longitude']+['Time Zone']+['Elevation'])
-        csvWriter.writerow([latitude]+[longitude]+[0]+['?'])
+        csvWriter.writerow([latitude]+[longitude]+[0]+[500])
         csvWriter.writerow(['Year']+['Month']+['Day']+['Hour']+['DNI']+['DHI']+['Wind Speed']+['Temperature'])
         csvfile.close()
     return csv_name
