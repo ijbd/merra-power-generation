@@ -240,7 +240,7 @@ def run_solar(csv_name, latitude):
     s.execute()
     print("Solar cf",s.Outputs.capacity_factor)
     output_ac = np.array(s.Outputs.ac) / 1000000.
-    print("Solar ac", outputs_ac[0:24])
+    print("Solar ac", output_ac[0:24])
     
     return output_ac
 
@@ -267,7 +267,7 @@ def run_wp(csv_name, power_curve_speed, power_curve_out):
     d.execute()
     print("Wind cf",d.Outputs.capacity_factor)
     output_ac = np.array(d.Outputs.gen) / 1000.00
-    print("Wind ac",outpus_ac[0:24])
+    print("Wind ac",output_ac[0:24])
     
     return output_ac
 
