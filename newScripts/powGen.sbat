@@ -1,0 +1,28 @@
+#!/bin/bash
+
+#SBATCH --job-name=merraToCFs
+#SBATCH --nodes=1
+#SBATCH --cpus-per-task=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=8GB 
+#SBATCH --time=72:00:00
+#SBATCH --account=mtcraig1
+
+# This is the shell driver for the powGen program. It simulates solar and wind power 
+# by repeatedly running the Power_Generation_.8.py longitude by longitude. 
+
+year=$1
+
+logFile="./log${year}.txt"
+
+python checkForFinish.py $logFile
+x=$?
+while [ $x -eq 0 ]
+do
+    python Power_Generation_.8.py $logFile $year
+    python checkForFinish.py $logFile
+    x=$?
+done
+rm $logFile
+echo "PowGen complete for $year"
+    
