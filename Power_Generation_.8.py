@@ -286,14 +286,14 @@ def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
 def main():
     
     ############## Program Parameters #############
-    year = 2018
+    year = sys.argv[1]
     start_lat = 31.5
     start_lon = -125
     num_lats = 37
     num_lons =  31
-    file_path = '/scratch/mtcraig_root/mtcraig/shared_data/westCoastYearFile/'            # Path to MERRA files
-    file_name = 'cordDataWestCoastYear'                                                        #annual file name
-    destination_file_path = '/scratch/mtcraig_root/mtcraig/shared_data/2018_wecc_VRE_cf/'  #destination for power generation files
+    file_path = sys.argv[2]                                               #path to MERRA files
+    file_name = sys.argv[3]                                               #annual file name
+    destination_file_path = sys.argv[4]  #destination for power generation files
     power_curve_file = './sample_power_curve.csv'
     ###############################################
 
@@ -315,7 +315,7 @@ def main():
             longitude = int(line) + 1
         l.close()
 
-    #get power curve for wind
+    #get power curve for wind turbines
     power_curve_speed, power_curve_out = get_power_curve(power_curve_file)
 
     #simulate power generation for every latitude
