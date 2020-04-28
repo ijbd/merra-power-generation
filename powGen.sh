@@ -11,7 +11,7 @@ merra_file="cordDataWestCoastYear2016.nc "
 destination_folder="/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/wecc/"
 while [ $x -eq 0 ]
 do
-    python Power_Generation_.8.py $year $merra_folder $merra_file
+    python Power_Generation_.8.py $year $merra_folder $merra_file $destination_folder
     python checkForFinish.py
     x=$?
 done
