@@ -7,7 +7,7 @@ python checkForFinish.py
 x=$?
 year=2016
 merra_folder="/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/processed/"
-merra_file="cordDataWestCoastYear2016.nc "
+merra_file="cordDataWestCoastYear2016"
 destination_folder="/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/wecc/"
 while [ $x -eq 0 ]
 do
