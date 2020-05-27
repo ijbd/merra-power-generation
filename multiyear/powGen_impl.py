@@ -309,7 +309,7 @@ def main(year,logFile):
     lat, lon = get_lat_lon(num_lats, num_lons, start_lat, start_lon) # (num lats, num lons, start lat, start lon)
 
     #check if output files exist
-    solar_name = destination_file_path + str(year) + "_solar_ac_generation" + str(year) + ".nc"
+    solar_name = destination_file_path + str(year) + "_solar_ac_generation.nc"
     if path.exists(solar_name) == False:
         create_netCDF_files(year, lat, lon, destination_file_path)
     

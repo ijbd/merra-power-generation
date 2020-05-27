@@ -299,7 +299,7 @@ def main(year,logFile):
     num_lons =  31
     file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/processed/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear' + str(year)                                                        #annual file name
-    destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/wecc/'  #destination for power generation files
+    destination_file_path = './'  #destination for power generation files
     power_curve_file = './sample_power_curve.csv'
     ###############################################
 
@@ -309,7 +309,7 @@ def main(year,logFile):
     lat, lon = get_lat_lon(num_lats, num_lons, start_lat, start_lon) # (num lats, num lons, start lat, start lon)
 
     #check if output files exist
-    solar_name = destination_file_path + str(year) + "_solar_ac_generation" + str(year) + ".nc"
+    solar_name = destination_file_path + str(year) + "_solar_ac_generation.nc"
     if path.exists(solar_name) == False:
         create_netCDF_files(year, lat, lon, destination_file_path)
     

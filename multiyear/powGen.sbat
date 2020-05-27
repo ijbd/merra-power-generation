@@ -19,7 +19,7 @@ python checkForFinish.py $logFile
 x=$?
 while [ $x -eq 0 ]
 do
-    python Power_Generation_.8.py $logFile $year
+    python powGen_impl.py $logFile $year
     python checkForFinish.py $logFile
     x=$?
 done
