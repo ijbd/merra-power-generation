@@ -257,7 +257,7 @@ def run_wp(csv_name, power_curve_speed, power_curve_out):
     ##### based on the Mitsubishi MWT 1000A ######
     d.Resource.wind_resource_filename = "./" + csv_name
     d.Resource.wind_resource_model_choice = 0
-    d.Turbine.wind_resource_shear = .14
+    #d.Turbine.wind_resource_shear = .14
     d.Turbine.wind_turbine_powercurve_powerout = power_curve_out
     d.Turbine.wind_turbine_powercurve_windspeeds = power_curve_speed
     d.Turbine.wind_turbine_rotor_diameter = 61.4
