@@ -5,10 +5,10 @@
 import os, sys
 from os import path
 
-if path.exists("./log.txt") != True:
+if path.exists(sys.argv[1]) != True:
     sys.exit(0)
 else:
-    l = open("./log.txt")
+    l = open(sys.argv[1])
     for line in l:
         if(line == "done"):
             sys.exit(1)
