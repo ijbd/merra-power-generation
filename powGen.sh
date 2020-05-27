@@ -10,7 +10,7 @@ logFile=2018_test_default_shear
 
 while [ $finished -eq 0 ]
 do
-    python powGen_impl.py $year $logFile
+    python powGen_impl.py $logFile $year
     python checkForFinish.py
     finished=$?
 done
