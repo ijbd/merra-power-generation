@@ -295,8 +295,8 @@ def main(year,logFile):
     ############## Program Parameters #############
     start_lat = 31.5
     start_lon = -125
-    num_lats = 37
-    num_lons =  31
+    num_lats = 10
+    num_lons =  10
     file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/processed/'            # Path to MERRA files
     file_name = 'cordDataWestCoastYear' + str(year)                                                        #annual file name
     destination_file_path = './'  #destination for power generation files
