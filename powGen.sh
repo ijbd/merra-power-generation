@@ -16,7 +16,6 @@ destination_file_path="./"
 python checkForFinish.py $log_file
 finished=$?
 
-pause 
 while [ $finished -eq 0 ]
 do
     python powGen_impl.py $log_file $year $processed_merra_file $destination_file_path
