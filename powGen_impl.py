@@ -1,36 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-#Variables:
-#  Rad -
-#    SWGDN surface shortwave flux
-#  SLV - 
-#    u2m eastward wind at 2m
-#    v2m northward wind at 2m
-#    u10m eastward wind at 10m
-#    v10m northward wind at 10m
-#    u50m eastward wind at 50m
-#    v50m northward wind at 50m
-#    T2M temperature at 2 m
-#    PS surface pressure
-
-#Wind output for one coordinate one year: 41 kbyte
-#Total output storage: 41 kb / lat lon year * 40 years * 50 lat * 94 lon * 2 outputs (solar & wind)
-#       15.4 Gbyte 
-
-#Meeting:
-# debug with julian file
-# file restructure lat first; 0 --> (lat 0, lon 1); 1 --> (lat 0, lon 1)
-# fall reflection, spring planning worksheet
-# yearDay starts 0 --> whatever day in the file
-
-#Questions:
-
-#To-Do:
-# explore julian file
-# capacity value readings
-
-
 import numpy as np
 import os, sys, datetime
 from netCDF4 import Dataset

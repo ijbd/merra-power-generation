@@ -15,7 +15,7 @@ finished=$?
 
 while [ $finished -eq 0 ]
 do
-    python powGen_impl.py $year $region $logfile
+    python powGen_impl.py $year $region $log_file
     python checkForFinish.py $log_file
     finished=$?
 done
