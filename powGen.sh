@@ -7,18 +7,15 @@
 
 
 year=2018
+region="wecc"
 log_file="log.tmp"
-processed_merra_path="/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/processed/"
-processed_merra_name="cordDataWestCoastYear"$year".nc"
-processed_merra_file=$processed_merra_path$processed_merra_name
-destination_file_path="./"
 
 python checkForFinish.py $log_file
 finished=$?
 
 while [ $finished -eq 0 ]
 do
-    python powGen_impl.py $log_file $year $processed_merra_file $destination_file_path
+    python powGen_impl.py $year $region $logfile
     python checkForFinish.py $log_file
     finished=$?
 done
