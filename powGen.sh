@@ -4,17 +4,25 @@
 # by repeatedly running the Power_Generation_.8.py longitude by longitude. 
 
 
-finished=$?
-year=2018
-logFile=2018_test_default_shear
-python checkForFinish.py $logFile
 
+
+year=2018
+log_file="log.tmp"
+processed_merra_path="/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/processed/"
+processed_merra_name="cordDataWestCoastYear"$year".nc"
+processed_merra_file=$processed_merra_path$processed_merra_name
+destination_file_path="./"
+
+python checkForFinish.py $log_file
+finished=$?
+
+pause 
 while [ $finished -eq 0 ]
 do
-    python powGen_impl.py $logFile $year
-    python checkForFinish.py $logFile
+    python powGen_impl.py $log_file $year $processed_merra_file $destination_file_path
+    python checkForFinish.py $log_file
     finished=$?
 done
-rm $logFile
+rm $log_file
 echo "PowGen complete"
     
