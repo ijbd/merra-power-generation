@@ -65,7 +65,7 @@ def get_lat_lon(ignore):
     lons = np.arange(3)
     num_lats = 3
     num_lons = 3
-    return lats, lons, num_lats, num_lons)
+    return lats, lons, num_lats, num_lons
 
 
 def get_power_curve(power_curve_file):
