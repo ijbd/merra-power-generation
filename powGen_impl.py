@@ -22,11 +22,11 @@ print('Log file and year: ' + log_file + ' ' + str(year),flush=True)
 
 def get_lat_lon(processed_merra_file):
     
-    processed_merra_file = "scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/raw/MERRA2_400.tavg1_2d_rad_Nx.20181231.nc4.nc4"
+    processed_merra_file = "/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/wecc/raw/MERRA2_400.tavg1_2d_rad_Nx.20181231.nc4.nc4"
 
     data = Dataset(processed_merra_file)
-    lats = np.array(data.variables['lat'][:3])
-    lons = np.array(data.variables['lon'][:3])
+    lats = np.array(data.variables['lat'])
+    lons = np.array(data.variables['lon'])
     data.close()
     num_lats = lats.size
     num_lons = lons.size
