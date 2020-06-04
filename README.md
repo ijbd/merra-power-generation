@@ -29,9 +29,9 @@ File should be in netCDf format:
     - PS 
 
 2. POWER GENERATION PARAMETERS
-  - Parameters within Power_Generation_.8.py should be set by user. 
-  - The first set of parameters can be found in main(). These include year, geographic parameters, and file/folder locations. 
-  - Additional System Advisory Model parameters should be set in the respective run_solar and run_wind functions. 
+  - Parameters within powGen_impl.py and powGen.sh should be set by user. 
+  - The first set of parameters are in the shell script, powGen.sh. These include year, geographic parameters, and file/folder locations. 
+  - System Advisory Model parameters should be set in the respective run_solar and run_wind functions. 
 
 3. COMMAND LINE INSTRUCTION
   - First, change the the shell script permissions to allow execution
