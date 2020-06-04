@@ -44,10 +44,9 @@ import os.path
 from os import path
 
 #SYSTEM INPUTS
-log_file = sys.argv[1]
-year = int(sys.argv[2])
-processed_merra_file = sys.argv[3]
-destination_file_path = sys.argv[4]
+year = int(sys.argv[1])
+region = sys.argv[2]
+log_file = sys.argv[3]
 print('Log file and year: ' + log_file + ' ' + str(year),flush=True)
 
 
@@ -303,10 +302,16 @@ def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     return 0
 
 
-def main(year,log_file,processed_merra_file,destination_file_path):
+def main(year,region,log_file):
         
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
     
+    processed_merra_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/'+region+'/processed/'
+    if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
+    else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
+    processed_merra_file = processed_merra_path + processed_merra_name
+    destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
+
     #get latitude and longitude arrays
     lat, lon, num_lats, num_lons = get_lat_lon(processed_merra_file)
 
@@ -367,5 +372,5 @@ def main(year,log_file,processed_merra_file,destination_file_path):
     l.close()
     print('Longitude finished: \t {:%Y-%m-%d %H:%M:%S} \n'.format(datetime.datetime.now()))
 
-main(year,log_file,processed_merra_file,destination_file_path)
+main(year,region,log_file)
 

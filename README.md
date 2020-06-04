@@ -30,7 +30,7 @@ File should be in netCDf format:
 
 2. POWER GENERATION PARAMETERS
   - Parameters within powGen_impl.py and powGen.sh should be set by user. 
-  - The first set of parameters are in the shell script, powGen.sh. These include year, geographic parameters, and file/folder locations. 
+  - The first set of parameters are in the shell script, powGen.sh. These include the simulation year and region. 
   - System Advisory Model parameters should be set in the respective run_solar and run_wind functions. 
 
 3. COMMAND LINE INSTRUCTION
