@@ -20,9 +20,6 @@ print('Year, Region: '+str(year)+' '+region,flush=True)
 
 
 def get_lat_lon(processed_merra_file):
-    if True:
-        return np.arange(3), np.arange(3), 3, 3
-
     data = Dataset(processed_merra_file)
     lats = np.array(data.variables['lat'][:])
     lons = np.array(data.variables['lon'][:])
@@ -284,7 +281,7 @@ def main(year,region):
     create_netCDF_files(year, lat, lon, destination_file_path)
 
     #get power curve for wind
-    power_curve_file = './sample_power_curve.csv'
+    power_curve_file = '/scratch/mtcraig_root/mtcraig1/shared_data/powGen/sample_power_curve.csv'
     power_curve = get_power_curve(power_curve_file)
 
     #simulate power generation for every latitude and longitude

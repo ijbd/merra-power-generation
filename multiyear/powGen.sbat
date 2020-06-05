@@ -13,16 +13,8 @@
 
 year=$1
 region="wecc"
-log_file="./log${year}.txt"
 
-python checkForFinish.py $log_file
-x=$?
-while [ $x -eq 0 ]
-do
-    python ../powGen_impl.py $year $region $log_file
-    python ../checkForFinish.py $log_file
-    x=$?
-done
-rm $logFile
+python ../powGen_impl_beta.py $year $region
+
 echo "PowGen complete for $year"
     
