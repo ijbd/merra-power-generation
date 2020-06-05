@@ -20,10 +20,12 @@ print('Year, Region: '+str(year)+' '+region,flush=True)
 
 
 def get_lat_lon(processed_merra_file):
-    
+    if true:
+        return np.arange(3), np.arange(3), 3, 3
+        
     data = Dataset(processed_merra_file)
-    lats = np.array(data.variables['lat'][:3])
-    lons = np.array(data.variables['lon'][:3])
+    lats = np.array(data.variables['lat'][:])
+    lons = np.array(data.variables['lon'][:])
     data.close()    
     num_lats = lats.size
     num_lons = lons.size
