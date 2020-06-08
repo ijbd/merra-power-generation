@@ -1,3 +1,7 @@
+# ijbd:
+# 
+# Perform some basic checks on powGen output files. 
+
 import numpy as np
 import sys
 from netCDF4 import Dataset
