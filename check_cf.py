@@ -7,11 +7,16 @@ import sys
 from netCDF4 import Dataset
 
 cf_root = "/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/"
+
 region = sys.argv[1]
 year = sys.argv[2]
-type = sys.argv[3]
+gen_type = sys.argv[3]
 
-filename = cf_root + region + "/" + year + "_" + type + "_generation_cf.nc"
+if len(sys.argv) == 5:
+    if sys.argv[4] == "old":
+        filename = cf_root + region + '/' + year + '_' + gen_type + '_ac_generation.nc'
+else:
+    filename = cf_root + region + "/" + year + "_" + gen_type + "_generation_cf.nc"
 
 data = Dataset(filename)
 
