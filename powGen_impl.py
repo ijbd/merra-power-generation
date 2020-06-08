@@ -17,7 +17,7 @@ from os import path
 year = int(sys.argv[1])
 region = sys.argv[2]
 log_file = sys.argv[3]
-print('Log file and year: ' + log_file + ' ' + str(year),flush=True)
+print('Log file and year and system: ' + log_file + ' ' + str(year) + ' ' + region,flush=True)
 
 
 def get_lat_lon(processed_merra_file):
