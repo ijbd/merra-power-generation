@@ -7,7 +7,7 @@
 
 
 year=2018
-region="wecc"
+region="ercot"
 log_file="log.tmp"
 
 python checkForFinish.py $log_file

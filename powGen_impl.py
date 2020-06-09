@@ -22,20 +22,18 @@ print('Log file and year and system: ' + log_file + ' ' + str(year) + ' ' + regi
 
 def get_lat_lon(processed_merra_file):
     data = Dataset(processed_merra_file)
-    lats = np.array(data.variables['lat'])
-    lons = np.array(data.variables['lon'])
+    lats = np.array(data.variables['lat'][:3])
+    lons = np.array(data.variables['lon'][:3])
     data.close()    
     num_lats = lats.size
     num_lons = lons.size
     return lats, lons, num_lats, num_lons
-
 
 def get_power_curve(power_curve_file):
     power_curve = dict()
     power_curve["speed"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[0]).values)
     power_curve["powerout"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values)
     return power_curve
-
 
 def create_netCDF_files(year, lats, lons, destination):
     solar_name = destination + str(year) + "_solar_generation_cf.nc"
@@ -64,7 +62,6 @@ def create_netCDF_files(year, lats, lons, destination):
     wind.close()
     return 0
 
-
 def create_csv(year, latitude, longitude): #lat lon in degrees
     solar_csv = str(year) + '_' + str(latitude) + '_' + str(longitude) + '.csv'
     with open(solar_csv, 'w', newline='') as csvfile:
@@ -74,7 +71,6 @@ def create_csv(year, latitude, longitude): #lat lon in degrees
         csvWriter.writerow(['Year']+['Month']+['Day']+['Hour']+['DNI']+['DHI']+['Wind Speed']+['Temperature'])
         csvfile.close()
     return solar_csv
-
 
 def create_srw(year, latitude, longitude): #lat lon in degrees
     wind_srw = str(year) + '_' + str(latitude) + '_' + str(longitude) + '_wp.srw'
@@ -99,7 +95,6 @@ def get_date(jd):
     else:
         day = jd
     return month, day      
-
 
 def get_data(latitude, longitude, num_lons, merra_data):
     
@@ -135,7 +130,6 @@ def get_data(latitude, longitude, num_lons, merra_data):
     
     return ghi, temperature, pressure, windSpeed2, windSpeed10, windSpeed50, windDirection 
 
-
 def get_windDirection(u50m, v50m):
     
     direction = np.zeros(u50m.size)
@@ -154,7 +148,6 @@ def get_windDirection(u50m, v50m):
 
     return direction
 
-
 def get_date_time_index(year, month, day):
     if day < 10:
         two_dig_day = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09']
@@ -168,7 +161,6 @@ def get_date_time_index(year, month, day):
         str_month = str(month)
     times = pd.date_range(str(year)+'-'+str_month+'-'+str_day, periods=24, freq='H')
     return times
-
 
 # PVLIB from Sandia National Laboratory to estimate dni/dhi from ghi using DISC model
 def get_dni_dhi(year, jd, month, day, latitude, longitude, ghi):
@@ -186,7 +178,6 @@ def get_dni_dhi(year, jd, month, day, latitude, longitude, ghi):
     dhi = ghi - dni * np.cos(zen_rads)
     return dni, dhi
 
-
 def write_day2csv(solar_csv, year, month, day, dni, dhi, windSpeed, temperature):
     with open(solar_csv, 'a', newline='') as csvfile:
         for i in range(24):
@@ -195,7 +186,6 @@ def write_day2csv(solar_csv, year, month, day, dni, dhi, windSpeed, temperature)
         csvfile.flush()
         csvfile.close()
 
-
 def write_2srw(wind_srw, temperature, pressure, windSpeed2, windSpeed10, windSpeed50, windDirection):
     with open(wind_srw, 'a', newline='') as csvfile:
         for i in range(temperature.size):
@@ -203,7 +193,6 @@ def write_2srw(wind_srw, temperature, pressure, windSpeed2, windSpeed10, windSpe
             csvWriter.writerow([temperature[i]]+[pressure[i]]+[windSpeed2[i]]+[windSpeed10[i]]+[windSpeed50[i]]+[windDirection[i]])
         csvfile.flush()
         csvfile.close()
-
 
 def run_solar(solar_csv, latitude):
     s = pv.default("PVWattsNone")
@@ -224,7 +213,6 @@ def run_solar(solar_csv, latitude):
     output_cf = np.array(s.Outputs.ac) / (nameplate_capacity * 1000) #convert AC generation (w) to capacity factor
     
     return output_cf
-
 
 def run_wp(wind_srw, power_curve):
     d = wp.default("WindPowerNone")
@@ -249,7 +237,6 @@ def run_wp(wind_srw, power_curve):
     
     return output_cf
 
-
 def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     solar_name = destination + str(year) + "_solar_generation_cf.nc"
     solar = Dataset(solar_name, "a")
@@ -264,7 +251,6 @@ def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     wind.close()
     return 0
 
-
 def main(year,region,log_file):
         
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
@@ -273,10 +259,13 @@ def main(year,region,log_file):
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
     else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
-    destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
+    #destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
+    destination_file_path = './'
 
     #get latitude and longitude arrays
     lat, lon, num_lats, num_lons = get_lat_lon(processed_merra_file)
+
+    print(lat, lon, num_lats, num_lons)
 
     #check if output files exist
     test_file_name = destination_file_path + str(year) + "_solar_generation_cf.nc"

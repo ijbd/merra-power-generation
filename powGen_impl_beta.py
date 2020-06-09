@@ -277,7 +277,7 @@ def main(year,region):
     #get latitude and longitude arrays
     lat, lon, num_lats, num_lons = get_lat_lon(processed_merra_file)
 
-    #check if output files exist
+    #set_up net CDFs
     create_netCDF_files(year, lat, lon, destination_file_path)
 
     #get power curve for wind
