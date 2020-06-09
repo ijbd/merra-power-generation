@@ -22,8 +22,8 @@ print('Log file and year and system: ' + log_file + ' ' + str(year) + ' ' + regi
 
 def get_lat_lon(processed_merra_file):
     data = Dataset(processed_merra_file)
-    lats = np.array(data.variables['lat'][:3])
-    lons = np.array(data.variables['lon'][:3])
+    lats = np.array(data.variables['lat'][:])
+    lons = np.array(data.variables['lon'][:])
     data.close()    
     num_lats = lats.size
     num_lons = lons.size
