@@ -16,6 +16,8 @@ gen_type = sys.argv[3]
 if len(sys.argv) == 5:
     if sys.argv[4] == "old":
         filename = cf_root + region + '/' + year + '_' + gen_type + '_ac_generation.nc'
+    if sys.argv[4] == "test":
+        filename = year + "_" + gen_type + "_generation_cf.nc"
 else:
     filename = cf_root + region + "/" + year + "_" + gen_type + "_generation_cf.nc"
 
@@ -24,6 +26,8 @@ data = Dataset(filename)
 if len(sys.argv) == 5:
     if sys.argv[4] == "old":
         cf = np.array(data.variables['ac'])
+    if sys.argv[4] == "test":
+        cf = np.array(data.variables['cf'])
 else:
     cf = np.array(data.variables['cf'])
 
