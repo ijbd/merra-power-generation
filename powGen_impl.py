@@ -259,13 +259,11 @@ def main(year,region,log_file):
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
     else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
-    #destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
-    destination_file_path = './'
+    destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
 
     #get latitude and longitude arrays
     lat, lon, num_lats, num_lons = get_lat_lon(processed_merra_file)
 
-    print(lat, lon, num_lats, num_lons)
 
     #check if output files exist
     test_file_name = destination_file_path + str(year) + "_solar_generation_cf.nc"
