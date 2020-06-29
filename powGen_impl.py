@@ -336,7 +336,7 @@ def main(year,region,log_file):
         solar_outputs = run_solar(solar_csv, lat[latitude])
         try:
             wind_outputs = run_wp(0,wind_IEC_class[latitude][longitude], power_curve)
-        except:
+        except KeyError:
             wind_outputs = run_wp(0,wind_IEC_class[longitude][latitude], power_curve)  
 
         
