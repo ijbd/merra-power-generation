@@ -335,9 +335,10 @@ def main(year,region,log_file):
         # simulate generation with System Advisory Model, tries lats and longs both ways for wind power class
         solar_outputs = run_solar(solar_csv, lat[latitude])
         try:
-            wind_outputs = run_wp(0,wind_IEC_class[latitude][longitude], power_curve)
-        except:
-            wind_outputs = run_wp(0,wind_IEC_class[longitude][latitude], power_curve)  
+            wind_outputs = run_wp(0,wind_IEC_class[longitude][latitude], power_curve)
+        except KeyError:
+            print("Key error occured in lat longs for wind outputs, prior data generate could be false!")
+            wind_outputs = run_wp(0,wind_IEC_class[latitude][longitude], power_curve)  
 
         
         # remove resource data (save space)
