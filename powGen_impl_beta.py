@@ -23,8 +23,8 @@ print('Year, Region: '+str(year)+' '+region,flush=True)
 def get_lat_lon(processed_merra_file):
 
     data = Dataset(processed_merra_file)
-    lats = np.array(data.variables['lat'][:])
-    lons = np.array(data.variables['lon'][:])
+    lats = np.array(data.variables['lat'][:3])
+    lons = np.array(data.variables['lon'][:3])
     data.close()    
 
     return lats, lons
