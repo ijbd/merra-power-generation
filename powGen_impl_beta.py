@@ -24,10 +24,7 @@ def get_lat_lon(processed_merra_file):
     lats = np.array(data.variables['lat'][:])
     lons = np.array(data.variables['lon'][:])
     data.close()    
-    num_lats = lats.size
-    num_lons = lons.size
-    return lats, lons, num_lats, num_lons
-
+    return lats, lons
 
 def get_power_curve(power_curve_file):
     power_curve = dict()
@@ -35,6 +32,20 @@ def get_power_curve(power_curve_file):
     power_curve["powerout"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values)
     return power_curve
 
+def get_power_curve_IEC(power_curve_file):
+    raw_data = pd.read_excel("wind_turbine_power_curves.xlsx")
+
+    #creates dict within dict for each composite wind class, redundancy in speed but left in case needed in future uses
+    power_curve = dict()
+    for wind_turbine in ["Composite IEC Class I","Composite IEC Class II","Composite IEC Class III"]:
+        power_curve[wind_turbine] = dict()
+        power_curve[wind_turbine]["speed"] = raw_data["Wind Speed"].values
+        power_curve[wind_turbine]["powerout"] = raw_data[wind_turbine].values
+    return power_curve
+
+def get_wind_IEC_class():
+    #reads in panda array of power classes for US, by far majority is level 3 or not recommended
+    return pd.read_excel("wind_turbine_power_curves.xlsx")
 
 def create_netCDF_files(year, lats, lons, destination):
     solar_name = destination + str(year) + "_solar_generation_cf.nc"
@@ -63,7 +74,6 @@ def create_netCDF_files(year, lats, lons, destination):
     wind.close()
     return 0
 
-
 def create_csv(year, latitude, longitude): #lat lon in degrees
     solar_csv = str(year) + '_' + str(latitude) + '_' + str(longitude) + '.csv'
     with open(solar_csv, 'w', newline='') as csvfile:
@@ -73,7 +83,6 @@ def create_csv(year, latitude, longitude): #lat lon in degrees
         csvWriter.writerow(['Year']+['Month']+['Day']+['Hour']+['DNI']+['DHI']+['Wind Speed']+['Temperature'])
         csvfile.close()
     return solar_csv
-
 
 def create_srw(year, latitude, longitude): #lat lon in degrees
     wind_srw = str(year) + '_' + str(latitude) + '_' + str(longitude) + '_wp.srw'
@@ -98,7 +107,6 @@ def get_date(jd):
     else:
         day = jd
     return month, day      
-
 
 def get_data(latitude, longitude, num_lons, merra_data):
     
@@ -134,7 +142,6 @@ def get_data(latitude, longitude, num_lons, merra_data):
     
     return ghi, temperature, pressure, windSpeed2, windSpeed10, windSpeed50, windDirection 
 
-
 def get_windDirection(u50m, v50m):
     
     direction = np.zeros(u50m.size)
@@ -153,7 +160,6 @@ def get_windDirection(u50m, v50m):
 
     return direction
 
-
 def get_date_time_index(year, month, day):
     if day < 10:
         two_dig_day = ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09']
@@ -167,7 +173,6 @@ def get_date_time_index(year, month, day):
         str_month = str(month)
     times = pd.date_range(str(year)+'-'+str_month+'-'+str_day, periods=24, freq='H')
     return times
-
 
 # PVLIB from Sandia National Laboratory to estimate dni/dhi from ghi using DISC model
 def get_dni_dhi(year, jd, month, day, latitude, longitude, ghi):
@@ -185,7 +190,6 @@ def get_dni_dhi(year, jd, month, day, latitude, longitude, ghi):
     dhi = ghi - dni * np.cos(zen_rads)
     return dni, dhi
 
-
 def write_day2csv(solar_csv, year, month, day, dni, dhi, windSpeed, temperature):
     with open(solar_csv, 'a', newline='') as csvfile:
         for i in range(24):
@@ -194,7 +198,6 @@ def write_day2csv(solar_csv, year, month, day, dni, dhi, windSpeed, temperature)
         csvfile.flush()
         csvfile.close()
 
-
 def write_2srw(wind_srw, temperature, pressure, windSpeed2, windSpeed10, windSpeed50, windDirection):
     with open(wind_srw, 'a', newline='') as csvfile:
         for i in range(temperature.size):
@@ -202,7 +205,6 @@ def write_2srw(wind_srw, temperature, pressure, windSpeed2, windSpeed10, windSpe
             csvWriter.writerow([temperature[i]]+[pressure[i]]+[windSpeed2[i]]+[windSpeed10[i]]+[windSpeed50[i]]+[windDirection[i]])
         csvfile.flush()
         csvfile.close()
-
 
 def run_solar(solar_csv, latitude):
     s = pv.default("PVWattsNone")
@@ -224,19 +226,28 @@ def run_solar(solar_csv, latitude):
     
     return output_cf
 
-
-def run_wp(wind_srw, power_curve):
+def run_wp(wind_srw, wind_class, power_curve):
     d = wp.default("WindPowerNone")
-    
+
+    #assigning values for respective wind power classes
+    if wind_class == 1:
+        powerout = power_curve["Composite IEC Class I"]["powerout"]
+        speed = power_curve["Composite IEC Class I"]["speed"]
+    elif  wind_class == 2:
+        powerout = power_curve["Composite IEC Class II"]["powerout"]
+        speed = power_curve["Composite IEC Class II"]["speed"]
+    else:
+        powerout = power_curve["Composite IEC Class III"]["powerout"]
+        speed = power_curve["Composite IEC Class III"]["speed"]
+        
     ##### Parameters #######
-    ##### based on the Mitsubishi MWT 1000A ######
     d.Resource.wind_resource_filename = wind_srw
     d.Resource.wind_resource_model_choice = 0
-    d.Turbine.wind_turbine_powercurve_powerout = power_curve["powerout"]
-    d.Turbine.wind_turbine_powercurve_windspeeds = power_curve["speed"]
-    d.Turbine.wind_turbine_rotor_diameter = 61.4
+    d.Turbine.wind_turbine_powercurve_powerout = powerout
+    d.Turbine.wind_turbine_powercurve_windspeeds = speed
+    d.Turbine.wind_turbine_rotor_diameter = 90
     d.Turbine.wind_turbine_hub_ht = 80
-    nameplate_capacity = 1000 #kw
+    nameplate_capacity = 1500 #kw
     d.Farm.system_capacity = nameplate_capacity # System Capacity (kW)
     d.Farm.wind_farm_wake_model = 0
     d.Farm.wind_farm_xCoordinates = np.array([0]) # Lone turbine (centered at position 0,0 in farm)
@@ -247,7 +258,6 @@ def run_wp(wind_srw, power_curve):
     output_cf = np.array(d.Outputs.gen) / nameplate_capacity #convert AC generation (kw) to capacity factor
     
     return output_cf
-
 
 def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     solar_name = destination + str(year) + "_solar_generation_cf.nc"
@@ -263,11 +273,10 @@ def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     wind.close()
     return 0
 
-
 def main(year,region):
         
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
-    
+
     processed_merra_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/'+region+'/processed/'
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
     else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
@@ -275,18 +284,22 @@ def main(year,region):
     destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
 
     #get latitude and longitude arrays
-    lat, lon, num_lats, num_lons = get_lat_lon(processed_merra_file)
+    lat, lon = get_lat_lon(processed_merra_file)
 
     #set_up net CDFs
     create_netCDF_files(year, lat, lon, destination_file_path)
 
     #get power curve for wind
-    power_curve_file = '/scratch/mtcraig_root/mtcraig1/shared_data/powGen/sample_power_curve.csv'
-    power_curve = get_power_curve(power_curve_file)
+    power_curve_file = './wind_turbine_power_curves.xlsx'
+    power_curve = get_power_curve_IEC(power_curve_file)
+
+    #get wind class for all coords in area
+    wind_IEC_class = pd.read_excel("IEC_wind_class.xlsx",index_col=0)
 
     #simulate power generation for every latitude and longitude
     for longitude in range(lon.size):
         for latitude in range(lat.size):
+
             solar_csv = create_csv(year, lat[latitude], lon[longitude])
             wind_srw = create_srw(year, lat[latitude], lon[longitude])
             
@@ -305,7 +318,7 @@ def main(year,region):
             
             # simulate generation with System Advisory Model
             solar_outputs = run_solar(solar_csv, lat[latitude])
-            wind_outputs = run_wp(wind_srw, power_curve)
+            wind_outputs = run_wp(wind_srw,wind_IEC_class[longitude][latitude], power_curve)
             
             # remove resource data (save space)
             os.remove(solar_csv)

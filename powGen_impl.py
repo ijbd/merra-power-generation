@@ -241,10 +241,9 @@ def run_wp(wind_srw, wind_class, power_curve):
         speed = power_curve["Composite IEC Class II"]["speed"]
     else:
         powerout = power_curve["Composite IEC Class III"]["powerout"]
-        speed = power_curve["Composite IEC Class III"]["speed"]    
+        speed = power_curve["Composite IEC Class III"]["speed"]
         
     ##### Parameters #######
-    ##### based on the Mitsubishi MWT 1000A ######
     d.Resource.wind_resource_filename = wind_srw
     d.Resource.wind_resource_model_choice = 0
     d.Turbine.wind_turbine_powercurve_powerout = powerout
@@ -332,13 +331,14 @@ def main(year,region,log_file):
             dni, dhi = get_dni_dhi(year, jd + 1, month, day, lat[latitude], lon[longitude], ghi[(jd)*24:(jd+1)*24]) #disc model
             write_day2csv(solar_csv, year, month, day, dni, dhi, windSpeed2[(jd)*24:(jd+1)*24], temperature[(jd)*24:(jd+1)*24])
         
+        
         # simulate generation with System Advisory Model, tries lats and longs both ways for wind power class
         solar_outputs = run_solar(solar_csv, lat[latitude])
         try:
-            wind_outputs = run_wp(0,wind_IEC_class[longitude][latitude], power_curve)
+            wind_outputs = run_wp(wind_srw,wind_IEC_class[longitude][latitude], power_curve)
         except KeyError:
             print("Key error occured in lat longs for wind outputs, prior data generate could be false!")
-            wind_outputs = run_wp(0,wind_IEC_class[latitude][longitude], power_curve)  
+            wind_outputs = run_wp(wind_srw,wind_IEC_class[latitude][longitude], power_curve)  
 
         
         # remove resource data (save space)
