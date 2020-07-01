@@ -13,8 +13,9 @@
 
 year=$1
 region="wecc"
+EIC_turbine_class="True" #Use excel map for every coordinate
 
-python ../powGen_impl_beta.py $year $region
+python ../powGen_impl_beta.py $year $region 
 
 echo "PowGen complete for $year"
     

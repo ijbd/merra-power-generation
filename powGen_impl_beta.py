@@ -20,14 +20,11 @@ use_wind_IEC_class = sys.argv[3] #True or 1,2,3
 
 print('Year, Region: '+str(year)+' '+region,flush=True)
 
-
-################## FIX INDEXES EEEEEEEEEEEEEEEEEEE
-
 def get_lat_lon(processed_merra_file):
 
     data = Dataset(processed_merra_file)
-    lats = np.array(data.variables['lat'][:3])
-    lons = np.array(data.variables['lon'][:3])
+    lats = np.array(data.variables['lat'][:])
+    lons = np.array(data.variables['lon'][:])
     data.close()    
 
     return lats, lons
@@ -283,8 +280,7 @@ def main(year,region):
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear' + str(year) + '.nc'
     else: processed_merra_name = 'processedMERRA' + region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
-    #destination_file_path = root_directory + 'merraData/cfs/'+region+'/'
-    destination_file_path = root_directory + 'powGen/' ############# DELETE EEEEEEEE
+    destination_file_path = root_directory + 'merraData/cfs/'+region+'/'
 
     #get latitude and longitude arrays
     lat, lon = get_lat_lon(processed_merra_file)
