@@ -16,9 +16,12 @@ from os import path
 #SYSTEM INPUTS
 year = int(sys.argv[1])
 region = sys.argv[2]
-wind_IEC_class = sys.argv[3] #True or 1,2,3
+use_wind_IEC_class = sys.argv[3] #True or 1,2,3
 
 print('Year, Region: '+str(year)+' '+region,flush=True)
+
+
+################## FIX INDEXES EEEEEEEEEEEEEEEEEEE
 
 def get_lat_lon(processed_merra_file):
 
@@ -275,13 +278,13 @@ def main(year,region):
 
     root_directory = '/scratch/mtcraig_root/mtcraig1/shared_data/'
 
-    #processed_merra_path = root_directory+'merraData/resource/'+region+'/processed/'
-    processed_merra_path = root_directory+'powGen/'
+    processed_merra_path = root_directory + 'merraData/resource/' + region + '/processed/'
 
-    if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
-    else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
+    if region == "wecc": processed_merra_name = 'cordDataWestCoastYear' + str(year) + '.nc'
+    else: processed_merra_name = 'processedMERRA' + region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
-    destination_file_path = root_directory+'merraData/cfs/'+region+'/'
+    #destination_file_path = root_directory + 'merraData/cfs/'+region+'/'
+    destination_file_path = root_directory + 'powGen/' ############# DELETE EEEEEEEE
 
     #get latitude and longitude arrays
     lat, lon = get_lat_lon(processed_merra_file)
@@ -290,12 +293,12 @@ def main(year,region):
     create_netCDF_files(year, lat, lon, destination_file_path)
 
     #get power curve for wind
-    power_curve_file = root_directory+'powGen/wind_turbine_power_curves.xlsx'
-    power_curve = get_power_curve_IEC(power_curve_file)
+    power_curve_file = root_directory + 'powGen/wind_turbine_power_curves.xlsx'
+    power_curve = get_power_curve(power_curve_file)
 
     #get wind class for all coords in area
     if use_wind_IEC_class == "True":
-        wind_IEC_class = pd.read_excel(root_directory+"powGen/IEC_wind_class.xlsx",index_col=0)
+        wind_IEC_class = pd.read_excel(root_directory + "powGen/IEC_wind_class.xlsx",index_col=0)
 
     #simulate power generation for every latitude and longitude
     for longitude in range(lon.size):
