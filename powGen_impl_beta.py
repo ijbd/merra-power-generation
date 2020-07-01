@@ -275,7 +275,8 @@ def main(year,region):
 
     root_directory = '/scratch/mtcraig_root/mtcraig1/shared_data/'
 
-    processed_merra_path = root_directory+'merraData/resource/'+region+'/processed/'
+    #processed_merra_path = root_directory+'merraData/resource/'+region+'/processed/'
+    processed_merra_path = root_directory+'powGen/'
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
     else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
