@@ -323,9 +323,9 @@ def main(year,region):
             # simulate generation with System Advisory Model
             solar_outputs = run_solar(solar_csv, lat[latitude])
             if use_wind_IEC_class == "True":
-                wind_outputs = run_wp(wind_srw,wind_IEC_class[longitude][latitude], power_curve)
+                wind_outputs = run_wp(wind_srw,int(wind_IEC_class[longitude][latitude]), power_curve)
             else:
-                wind_outputs = run_wp(wind_srw,use_wind_IEC_class, power_curve)
+                wind_outputs = run_wp(wind_srw,int(use_wind_IEC_class), power_curve)
 
             # remove resource data (save space)
             os.remove(solar_csv)
