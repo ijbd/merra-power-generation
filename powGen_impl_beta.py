@@ -43,10 +43,6 @@ def get_power_curve_IEC(power_curve_file):
         power_curve[wind_turbine]["powerout"] = raw_data[wind_turbine].values
     return power_curve
 
-def get_wind_IEC_class():
-    #reads in panda array of power classes for US, by far majority is level 3 or not recommended
-    return pd.read_excel("wind_turbine_power_curves.xlsx")
-
 def create_netCDF_files(year, lats, lons, destination):
     solar_name = destination + str(year) + "_solar_generation_cf.nc"
     solar = Dataset(solar_name, "w")
@@ -290,11 +286,11 @@ def main(year,region):
     create_netCDF_files(year, lat, lon, destination_file_path)
 
     #get power curve for wind
-    power_curve_file = './wind_turbine_power_curves.xlsx'
+    power_curve_file = '/scratch/mtcraig_root/mtcraig1/shared_data/powGen/wind_turbine_power_curves.xlsx'
     power_curve = get_power_curve_IEC(power_curve_file)
 
     #get wind class for all coords in area
-    wind_IEC_class = pd.read_excel("IEC_wind_class.xlsx",index_col=0)
+    wind_IEC_class = pd.read_excel("/scratch/mtcraig_root/mtcraig1/shared_data/powGen/IEC_wind_class.xlsx",index_col=0)
 
     #simulate power generation for every latitude and longitude
     for longitude in range(lon.size):
@@ -304,7 +300,7 @@ def main(year,region):
             wind_srw = create_srw(year, lat[latitude], lon[longitude])
             
             merra_data = Dataset(processed_merra_file)
-            ghi, temperature, pressure, windSpeed2, windSpeed10, windSpeed50, windDirection = get_data(latitude, longitude, num_lons, merra_data)
+            ghi, temperature, pressure, windSpeed2, windSpeed10, windSpeed50, windDirection = get_data(latitude, longitude, lon.size, merra_data)
             merra_data.close()
             
             # write wind resource data to srw for SAM
