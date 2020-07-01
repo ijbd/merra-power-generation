@@ -277,10 +277,11 @@ def main(year,region):
 
     #processed_merra_path = root_directory+'merraData/resource/'+region+'/processed/'
     processed_merra_path = root_directory+'powGen/'
+
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
     else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
-    destination_file_path = root_directory'merraData/cfs/'+region+'/'
+    destination_file_path = root_directory+'merraData/cfs/'+region+'/'
 
     #get latitude and longitude arrays
     lat, lon = get_lat_lon(processed_merra_file)
