@@ -16,23 +16,21 @@ from os import path
 #SYSTEM INPUTS
 year = int(sys.argv[1])
 region = sys.argv[2]
+wind_IEC_class = sys.argv[3] #True or 1,2,3
+
 print('Year, Region: '+str(year)+' '+region,flush=True)
 
-
 def get_lat_lon(processed_merra_file):
+
     data = Dataset(processed_merra_file)
     lats = np.array(data.variables['lat'][:])
     lons = np.array(data.variables['lon'][:])
     data.close()    
+
     return lats, lons
 
 def get_power_curve(power_curve_file):
-    power_curve = dict()
-    power_curve["speed"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[0]).values)
-    power_curve["powerout"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values)
-    return power_curve
 
-def get_power_curve_IEC(power_curve_file):
     raw_data = pd.read_excel("wind_turbine_power_curves.xlsx")
 
     #creates dict within dict for each composite wind class, redundancy in speed but left in case needed in future uses
@@ -41,6 +39,7 @@ def get_power_curve_IEC(power_curve_file):
         power_curve[wind_turbine] = dict()
         power_curve[wind_turbine]["speed"] = raw_data["Wind Speed"].values
         power_curve[wind_turbine]["powerout"] = raw_data[wind_turbine].values
+
     return power_curve
 
 def create_netCDF_files(year, lats, lons, destination):
@@ -223,6 +222,7 @@ def run_solar(solar_csv, latitude):
     return output_cf
 
 def run_wp(wind_srw, wind_class, power_curve):
+
     d = wp.default("WindPowerNone")
 
     #assigning values for respective wind power classes
@@ -273,11 +273,13 @@ def main(year,region):
         
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
 
-    processed_merra_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/'+region+'/processed/'
+    root_directory = '/scratch/mtcraig_root/mtcraig1/shared_data/'
+
+    processed_merra_path = root_directory+'merraData/resource/'+region+'/processed/'
     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'+str(year)+'.nc'
     else: processed_merra_name = 'processedMERRA'+region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
-    destination_file_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/cfs/'+region+'/'
+    destination_file_path = root_directory'merraData/cfs/'+region+'/'
 
     #get latitude and longitude arrays
     lat, lon = get_lat_lon(processed_merra_file)
@@ -286,11 +288,12 @@ def main(year,region):
     create_netCDF_files(year, lat, lon, destination_file_path)
 
     #get power curve for wind
-    power_curve_file = '/scratch/mtcraig_root/mtcraig1/shared_data/powGen/wind_turbine_power_curves.xlsx'
+    power_curve_file = root_directory+'powGen/wind_turbine_power_curves.xlsx'
     power_curve = get_power_curve_IEC(power_curve_file)
 
     #get wind class for all coords in area
-    wind_IEC_class = pd.read_excel("/scratch/mtcraig_root/mtcraig1/shared_data/powGen/IEC_wind_class.xlsx",index_col=0)
+    if use_wind_IEC_class == "True":
+        wind_IEC_class = pd.read_excel(root_directory+"powGen/IEC_wind_class.xlsx",index_col=0)
 
     #simulate power generation for every latitude and longitude
     for longitude in range(lon.size):
@@ -314,8 +317,11 @@ def main(year,region):
             
             # simulate generation with System Advisory Model
             solar_outputs = run_solar(solar_csv, lat[latitude])
-            wind_outputs = run_wp(wind_srw,wind_IEC_class[longitude][latitude], power_curve)
-            
+            if use_wind_IEC_class == "True":
+                wind_outputs = run_wp(wind_srw,wind_IEC_class[longitude][latitude], power_curve)
+            else:
+                wind_outputs = run_wp(wind_srw,use_wind_IEC_class, power_curve)
+
             # remove resource data (save space)
             os.remove(solar_csv)
             os.remove(wind_srw)
