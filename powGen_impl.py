@@ -19,7 +19,6 @@ region = sys.argv[2]
 log_file = sys.argv[3]
 print('Log file and year and system: ' + log_file + ' ' + str(year) + ' ' + region,flush=True)
 
-
 def get_lat_lon(processed_merra_file):
     data = Dataset(processed_merra_file)
     lats = np.array(data.variables['lat'][:])
@@ -34,6 +33,22 @@ def get_power_curve(power_curve_file):
     power_curve["speed"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[0]).values)
     power_curve["powerout"] = np.array(pd.read_csv(power_curve_file, skiprows=0, usecols=[1]).values)
     return power_curve
+
+def get_power_curve_IEC(power_curve_file):
+    raw_data = pd.read_excel("wind_turbine_power_curves.xlsx")
+
+    #creates dict within dict for each composite wind class, redundancy in speed but left in case needed in future uses
+    power_curve = dict()
+    for wind_turbine in ["Composite IEC Class I","Composite IEC Class II","Composite IEC Class III"]:
+        power_curve[wind_turbine] = dict()
+        power_curve[wind_turbine]["speed"] = raw_data["Wind Speed"].values
+        power_curve[wind_turbine]["powerout"] = raw_data[wind_turbine].values
+    return power_curve
+
+def get_wind_IEC_class():
+    #reads in panda array of power classes for US, by far majority is level 3 or not recommended
+    return pd.read_excel("wind_turbine_power_curves.xlsx")
+
 
 def create_netCDF_files(year, lats, lons, destination):
     solar_name = destination + str(year) + "_solar_generation_cf.nc"
@@ -214,18 +229,29 @@ def run_solar(solar_csv, latitude):
     
     return output_cf
 
-def run_wp(wind_srw, power_curve):
+def run_wp(wind_srw, wind_class, power_curve):
     d = wp.default("WindPowerNone")
-    
+
+    #assigning values for respective wind power classes
+    if wind_class == 1:
+        powerout = power_curve["Composite IEC Class I"]["powerout"]
+        speed = power_curve["Composite IEC Class I"]["speed"]
+    elif  wind_class == 2:
+        powerout = power_curve["Composite IEC Class II"]["powerout"]
+        speed = power_curve["Composite IEC Class II"]["speed"]
+    else:
+        powerout = power_curve["Composite IEC Class III"]["powerout"]
+        speed = power_curve["Composite IEC Class III"]["speed"]    
+        
     ##### Parameters #######
     ##### based on the Mitsubishi MWT 1000A ######
     d.Resource.wind_resource_filename = wind_srw
     d.Resource.wind_resource_model_choice = 0
-    d.Turbine.wind_turbine_powercurve_powerout = power_curve["powerout"]
-    d.Turbine.wind_turbine_powercurve_windspeeds = power_curve["speed"]
-    d.Turbine.wind_turbine_rotor_diameter = 61.4
+    d.Turbine.wind_turbine_powercurve_powerout = powerout
+    d.Turbine.wind_turbine_powercurve_windspeeds = speed
+    d.Turbine.wind_turbine_rotor_diameter = 90
     d.Turbine.wind_turbine_hub_ht = 80
-    nameplate_capacity = 1000 #kw
+    nameplate_capacity = 1500 #kw
     d.Farm.system_capacity = nameplate_capacity # System Capacity (kW)
     d.Farm.wind_farm_wake_model = 0
     d.Farm.wind_farm_xCoordinates = np.array([0]) # Lone turbine (centered at position 0,0 in farm)
@@ -252,7 +278,7 @@ def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     return 0
 
 def main(year,region,log_file):
-        
+
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
     
     processed_merra_path = '/scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/'+region+'/processed/'
@@ -278,9 +304,15 @@ def main(year,region,log_file):
             longitude = int(line) + 1
         l.close()
 
-    #get power curve for wind
-    power_curve_file = './sample_power_curve.csv'
-    power_curve = get_power_curve(power_curve_file)
+    #get power curve for wind above is prior data for no distinctation in wind power classes on location
+    #power_curve_file = './sample_power_curve.csv'
+    #power_curve = get_power_curve(power_curve_file)
+    power_curve_file = './wind_turbine_power_curves.xlsx'
+    power_curve = get_power_curve_IEC(power_curve_file)
+
+    #get wind class for all coords in area
+    wind_IEC_class = pd.read_excel("IEC_wind_class.xlsx")
+
 
     #simulate power generation for every latitude
     for latitude in range(lat.size):
@@ -300,9 +332,14 @@ def main(year,region,log_file):
             dni, dhi = get_dni_dhi(year, jd + 1, month, day, lat[latitude], lon[longitude], ghi[(jd)*24:(jd+1)*24]) #disc model
             write_day2csv(solar_csv, year, month, day, dni, dhi, windSpeed2[(jd)*24:(jd+1)*24], temperature[(jd)*24:(jd+1)*24])
         
-        # simulate generation with System Advisory Model
+        # simulate generation with System Advisory Model, tries lats and longs both ways for wind power class
         solar_outputs = run_solar(solar_csv, lat[latitude])
-        wind_outputs = run_wp(wind_srw, power_curve)
+        try:
+            wind_outputs = run_wp(0,wind_IEC_class[longitude][latitude], power_curve)
+        except KeyError:
+            print("Key error occured in lat longs for wind outputs, prior data generate could be false!")
+            wind_outputs = run_wp(0,wind_IEC_class[latitude][longitude], power_curve)  
+
         
         # remove resource data (save space)
         os.remove(solar_csv)
@@ -323,4 +360,3 @@ def main(year,region,log_file):
     print('Longitude finished: \t {:%Y-%m-%d %H:%M:%S} \n'.format(datetime.datetime.now()))
 
 main(year,region,log_file)
-
