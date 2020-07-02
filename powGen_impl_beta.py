@@ -12,11 +12,13 @@ import pvlib
 import PySAM.Windpower as wp
 import os.path
 from os import path
+import wind_class_generation
 
 #SYSTEM INPUTS
 year = int(sys.argv[1])
 region = sys.argv[2]
 use_wind_IEC_class = sys.argv[3] #True or 1,2,3
+create_wind_IEC_class = sys.argv[4] #True or False to create wind IEC class map
 
 print('Year, Region: '+str(year)+' '+region,flush=True)
 
@@ -294,7 +296,17 @@ def main(year,region):
 
     #get wind class for all coords in area
     if use_wind_IEC_class == "True":
-        wind_IEC_class = pd.read_excel(root_directory + "powGen/IEC_wind_class.xlsx",index_col=0)
+        excelFilePath = "IEC_wind_class.xlsx"
+        if create_wind_IEC_class:
+            yearList = [2016,2017,2018]
+            latLength = 37
+            longLength = 31
+            excelFilePath = "wind_class_generation_default.xlsx"
+            rawDataFilePath = "ENTER RAW DATA FILE PATH"
+
+            #generates wind power class map based on IEC wind power classes, returns file path to which power class was written to
+            excelFilePath = wind_class_generation.main(yearList, latLength, longLength, excelFilePath, rawDataFilePath)
+        wind_IEC_class = pd.read_excel(root_directory + "powGen/" + excelFilePath,index_col=0)
 
     #simulate power generation for every latitude and longitude
     for longitude in range(lon.size):
