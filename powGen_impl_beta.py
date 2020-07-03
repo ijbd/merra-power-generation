@@ -18,7 +18,7 @@ import wind_class_generation
 year = int(sys.argv[1])
 region = sys.argv[2]
 use_wind_IEC_class = sys.argv[3] #True or 1,2,3
-create_wind_IEC_class = sys.argv[4] #True or False to create wind IEC class map
+create_wind_IEC_class = sys.argv[4] == "True" #True or False to create wind IEC class map
 
 print('Year, Region: '+str(year)+' '+region,flush=True)
 
