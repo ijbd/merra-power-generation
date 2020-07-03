@@ -1,8 +1,10 @@
 #!/bin/bash
 
-for dataYear in {2016..2018}
+region="wecc"
+
+for year in {2016..2018}
 do
-     echo "Running:" $dataYear
-     sbatch powGen.sbat $dataYear
+     echo "Running:" $year $region
+     sbatch powGen.sbat $year $region
 done
 echo "Multiyear complete."

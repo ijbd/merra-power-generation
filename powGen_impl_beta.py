@@ -299,8 +299,8 @@ def main(year,region):
         excelFilePath = "IEC_wind_class.xlsx"
         if create_wind_IEC_class:
             yearList = [2016,2017,2018]
-            latLength = 37
-            longLength = 31
+            latLength = len(lat)
+            longLength = len(lon)
             excelFilePath = "wind_class_generation_default.xlsx"
             rawDataFilePath = "ENTER RAW DATA FILE PATH"
 

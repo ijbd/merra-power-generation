@@ -12,10 +12,11 @@
 # by repeatedly running the Power_Generation_.8.py longitude by longitude. 
 
 year=$1
-region="wecc"
-EIC_turbine_class="True" #Use excel map for every coordinate
+region=$2
+EIC_wind_class="True" #Use excel map for every coordinate
+make_wind_class="False"
 
-python powGen_impl_beta.py $year $region $EIC_turbine_class
+python -u powGen_impl_beta.py $year $region $EIC_wind_class $make_wind_class
 
-echo "PowGen complete for $year"
+echo "PowGen complete for $region, $year"
     
