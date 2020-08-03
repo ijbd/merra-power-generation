@@ -335,5 +335,6 @@ def main(year,region):
             print("%f, " %lat[latitude], "%f\t" %lon[longitude], '{:%Y-%m-%d %H:%M:%S} \n'.format(datetime.datetime.now()))
         print('Longitude finished: \t {:%Y-%m-%d %H:%M:%S} \n'.format(datetime.datetime.now()))
 
-main(year,region)
+if __name__ == "__main__":
+    main(year,region)
 
