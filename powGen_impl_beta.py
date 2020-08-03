@@ -15,10 +15,10 @@ from os import path
 import wind_class_generation
 
 #SYSTEM INPUTS
-year = int(sys.argv[1])
-region = sys.argv[2]
-
-print('Year, Region: '+str(year)+' '+region,flush=True)
+if __name__ == "__main__":
+    year = int(sys.argv[1])
+    region = sys.argv[2]
+    print('Year, Region: '+str(year)+' '+region,flush=True)
 
 def get_lat_lon(processed_merra_file):
 

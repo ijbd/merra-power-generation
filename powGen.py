@@ -1,6 +1,7 @@
 import sys
 import os
 import numpy as np
+from powGen_impl_beta import get_lat_lon
 
 region=sys.argv[1]
 start_year=int(sys.argv[2])
@@ -16,7 +17,7 @@ root_directory = '/scratch/mtcraig_root/mtcraig1/shared_data/'
 excelFilePath = root_directory + 'powGen/IEC_wind_class_'+region+'.xlsx'
 
 # check for existing spreadsheet
-if path.exists(excelFilePath):
+if os.path.exists(excelFilePath):
      pass
 else:
      print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than 10 minutes.', flush=True)
