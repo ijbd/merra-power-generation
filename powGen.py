@@ -21,7 +21,7 @@ excelFilePath = root_directory + 'powGen/IEC_wind_class_'+region+'.xlsx'
 if os.path.exists(excelFilePath):
      pass
 else:
-     print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than 10 minutes.')
+     print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than a few minutes.')
 
      processed_merra_path = root_directory + 'merraData/resource/' + region + '/processed/'
      if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'

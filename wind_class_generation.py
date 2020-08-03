@@ -54,7 +54,7 @@ def main(yearList, latLength, longLength, excelFilePath, rawDataFilePath):
         windSpeedArray = np.zeros((latLength,longLength))
         latLongIndex = 0
         for lat in range(0,latLength):
-            for long in range(0,longLength):
+            for lon in range(0,longLength):
                 #combine east and north values to get one single wind speed
                 finalWindSpeed50 = np.sqrt((eastwardWind50[latLongIndex][:][:]**2) + (northwardWind50[latLongIndex][:][:]**2))
                 finalWindSpeed10 = np.sqrt((eastwardWind10[latLongIndex][:][:]**2) + (northwardWind10[latLongIndex][:][:]**2))
@@ -78,8 +78,8 @@ def main(yearList, latLength, longLength, excelFilePath, rawDataFilePath):
                     iecLevel = 3
                 elif finalWindSpeed:
                     iecLevel = 0
-                windSpeedArray[lat][long] = iecLevel
-                windSpeedArrayCul[lat][long] += finalWindSpeed
+                windSpeedArray[lat][lon] = iecLevel
+                windSpeedArrayCul[lat][lon] += finalWindSpeed
                 latLongIndex += 1
 
     #finding mean for each lat long wind speed value for 2016-18
