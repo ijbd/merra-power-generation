@@ -269,47 +269,6 @@ def write_cord(year, solar_outputs, wind_outputs, lat, lon, destination):
     wind.close()
     return 0
 
-def create_IEC_class(region):
-    """ Create an excel sheet of IEC wind classes for the region of interest. This function finds all available years of wind resource data, calculates average wind speed and estimates the appropriate IEC turbine class for every coordinate. Results are stored in an excel sheet titled 'IEC_wind_class_ <region> .xlsx
-
-    ...
-
-    Args:
-    ------------------
-    `region` (str): name of region (in lower case) for which resource data is available.
-    """
-
-    root_directory = '/scratch/mtcraig_root/mtcraig1/shared_data/'
-
-    # check for existing sheet
-    excelFilePath = root_directory + 'powGen/IEC_wind_class_'+region+'.xlsx'
-
-    if path.exists(excelFilePath):
-        return 
-    else:
-        print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than 10 minutes.')
-
-    processed_merra_path = root_directory + 'merraData/resource/' + region + '/processed/'
-    if region == "wecc": processed_merra_name = 'cordDataWestCoastYear' + str(year) + '.nc'
-    else: processed_merra_name = 'processedMERRA' + region+str(year)+'.nc'
-    processed_merra_file = processed_merra_path + processed_merra_name
-
-    # get lat/lons
-    lat, lon = get_lat_lon(processed_merra_file)
-
-    #find all years of available resource data
-    yearList = [int(filename[-7:-3]) for filename in os.listdir(processed_merra_path)\
-                if len(filename == processed_merra_name) and filename.startswith(processed_merra_name[:-7])]
-    
-    print(yearList)
-
-    latLength = len(lat)
-    longLength = len(lon)
-    rawDataFilePath = processed_merra_file[:-7]
-    
-    #generates wind power class map based on IEC wind power classes, returns file path to which power class was written to
-    wind_class_generation.main(yearList, latLength, longLength, excelFilePath, rawDataFilePath)
-
 def main(year,region):
         
     print('Begin Program: \t {:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now()))
