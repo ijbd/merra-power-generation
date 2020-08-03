@@ -61,7 +61,17 @@ _________
 ## Process MERRA Data and Generate Power Generation Profiles
 ____________________
 
-### 1. Combine raw files into single annual netCDF files:
+### 1. Download Python Libraries
+
+> Assuming you have already downloaded Anaconda and have created/activated a conda environment, the remaining steps require a few python libraries. Download them using the following commands.
+>
+> `pip install NREL-PySAM`
+>
+> `pip install netCDF4`
+>
+> `pip install pvlib`
+
+### 2. Combine raw files into single annual netCDF files:
 
 > This script needs to be run for each year individually:
 >
@@ -75,7 +85,7 @@ ____________________
 >
 > **Note: This script is currently not included in this repository**
 
-### 2. Generate Capacity Values with the **powGen** script:
+### 3. Generate Capacity Values with the **powGen** script:
 
 > This script can be run for single or multiple years.
 > 
