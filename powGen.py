@@ -21,7 +21,7 @@ excelFilePath = root_directory + 'powGen/IEC_wind_class_'+region+'.xlsx'
 if os.path.exists(excelFilePath):
      pass
 else:
-     print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than 10 minutes.', flush=True)
+     print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than 10 minutes.')
 
      processed_merra_path = root_directory + 'merraData/resource/' + region + '/processed/'
      if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'
@@ -34,14 +34,12 @@ else:
      #find all years of available resource data
      yearList = [int(filename[-7:-3]) for filename in os.listdir(processed_merra_path) if filename != processed_merra_name+'.nc' and filename.startswith(processed_merra_name)]
 
-     print(yearList)
-
      latLength = len(lat)
      longLength = len(lon)
      rawDataFilePath = processed_merra_file[:-7]
 
      #generates wind power class map based on IEC wind power classes, returns file path to which power class was written to
-     wind_class_generation.main(yearList, latLength, longLength, excelFilePath, rawDataFilePath)
+     wind_class_generation.main(np.sort(yearList), latLength, longLength, excelFilePath, rawDataFilePath)
 
 print('Submitting batch jobs')
 year = start_year
