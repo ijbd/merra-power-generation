@@ -50,7 +50,7 @@ print('Submitting batch jobs')
 year = start_year
 while year <= end_year:
      print("Running:", year, region)
-     print("os.system('sbatch powGen.sbat '+str(year)+' '+region)")
+     os.system('sbatch powGen.sbat '+str(year)+' '+region)
      year += 1
 
 os.system('rm -r __pycache__/')
