@@ -1,7 +1,6 @@
 import sys
 import os
 import numpy as np
-from powGen_impl_beta 
 
 region=sys.argv[1]
 start_year=int(sys.argv[2])
