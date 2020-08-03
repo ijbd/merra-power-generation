@@ -292,12 +292,8 @@ def main(year,region):
     power_curve_file = root_directory + 'powGen/wind_turbine_power_curves.xlsx'
     power_curve = get_power_curve(power_curve_file)
 
-    #create IEC wind classes
+    #check for IEC class
     excelFilePath = root_directory + 'powGen/IEC_wind_class_'+region+'.xlsx'
-    if not path.exists(excelFilePath):
-        print('No IEC class excel sheet found for region.')
-        sys.exit(1)
-
     wind_IEC_class = pd.read_excel(excelFilePath,index_col=0)
 
     #simulate power generation for every latitude and longitude
