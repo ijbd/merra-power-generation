@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 from powGen_impl_beta import get_lat_lon
+import wind_class_generation
 
 region=sys.argv[1]
 start_year=int(sys.argv[2])
