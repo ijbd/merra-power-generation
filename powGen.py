@@ -36,7 +36,7 @@ else:
 
      latLength = len(lat)
      longLength = len(lon)
-     rawDataFilePath = processed_merra_file[:-7]
+     rawDataFilePath = processed_merra_file
 
      #generates wind power class map based on IEC wind power classes, returns file path to which power class was written to
      wind_class_generation.main(np.sort(yearList), latLength, longLength, excelFilePath, rawDataFilePath)
