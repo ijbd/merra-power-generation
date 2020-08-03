@@ -31,29 +31,28 @@ From SLV (link above):
 
 Create a directory in the existing MERRA folder for your region:
 
-`mkdir /scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/<region name>`
+    mkdir /scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/<region name>
 
 For consistency, replace `<region name>` with the name of your region in lower case (e.g. "wecc", "ercot").
 
 Create two directories within that folder:
 
-`mkdir /scratch/.../resource/<region name>/raw`
+    mkdir /scratch/.../resource/<region name>/raw
+    mkdir /scratch/.../resource/<region name>/processed
 
-`mkdir /scratch/.../resource/<region name>/processed`
+Copy the MERRA text file into the `raw/` folder from your home directory
 
-Copy the MERRA text file into the `raw` folder from your home directory
-
-`cp <name of text file> /scratch/.../resource/<region name>/raw/`
+    cp <name of text file> /scratch/.../resource/<region name>/raw/
 
 ### 4. Download MERRA NetCDF files via command line
 
-Go to the `raw` folder with the MERRA text file.
+Go to the `raw/` folder with the MERRA text file.
 
-`cd /scratch/.../resource/<region name>/raw`
+    cd /scratch/.../resource/<region name>/raw
 
 Run this command: 
 
-`wget --auth-no-challenge=on --keep-session-cookies --user=<username> --ask-password --content-disposition -i <filename>`   
+    wget --auth-no-challenge=on --keep-session-cookies --user=<username> --ask-password --content-disposition -i <filename> 
 
 `<username>` is your earth data account username and `<filename>` is the file path and name of the text document (includin .txt at end of file name) from your local position. The wget command can be run from anywhere but I like to run it in the same folder for ease of use letting the `<filename>` only being the filename.txt instead of having to include the file path. You'll be prompted for your earth data password after the command is run and then after inputting your password the download should start for all the NetCDF files in that text document. 
 
@@ -63,23 +62,21 @@ Run this command:
 
 Assuming you have already downloaded Anaconda and have created/activated a conda environment, the remaining steps require a few python libraries. Download them using the following commands.
 
-`pip install NREL-PySAM`
-
-`pip install netCDF4`
-
-`pip install pvlib`
+    pip install NREL-PySAM
+    pip install netCDF4
+    pip install pvlib
 
 ### 2. Combine raw files into single annual netCDF files:
 
 This script needs to be run for each year individually:
 
-`python /scratch/mtcraig_root/mtcraig1/shared_data/merraData/scripts/rewriteMERRA.py <year> <region>` 
+    python /scratch/mtcraig_root/mtcraig1/shared_data/merraData/scripts/rewriteMERRA.py <year> <region>
 
 `<year>` and `<region>` are the year and region of interest, respectively.
 
 e.g.
 
-`python /scratch/.../rewriteMERRA.py 2017 ercot`
+    python /scratch/.../rewriteMERRA.py 2017 ercot
 
 **Note: This script is currently not included in this repository**
 
@@ -87,7 +84,7 @@ e.g.
 
 This script can be run for single or multiple years.
  
-`python /scratch/mtcraig_root/mtcraig1/shared_data/powGen/powGen.py <region> <start year> <end year>`
+    python /scratch/mtcraig_root/mtcraig1/shared_data/powGen/powGen.py <region> <start year> <end year>
 
 `<region>` is the region of interest. `<start year>` and `<end year>` are the start and end years to run. **Both are inclusive.**
 
