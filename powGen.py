@@ -3,6 +3,8 @@ import os
 import numpy as np
 from powGen_impl_beta import get_lat_lon
 import wind_class_generation
+import time
+from netCDF4 import Dataset 
 
 region=sys.argv[1]
 start_year=int(sys.argv[2])
@@ -22,6 +24,8 @@ if os.path.exists(excelFilePath):
      pass
 else:
      print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than a few minutes.')
+     
+     time.sleep(3)
 
      processed_merra_path = root_directory + 'merraData/resource/' + region + '/processed/'
      if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'
@@ -29,7 +33,8 @@ else:
      processed_merra_file = processed_merra_path + processed_merra_name
 
      # get lat/lons
-     lat, lon = get_lat_lon(processed_merra_file+str(start_year)+'.nc')
+     lat = np.array(Dataset(processed_merra_file+str(start_year)+'.nc').variables['lat'])
+     lon = np.array(Dataset(processed_merra_file+str(start_year)+'.nc').variables['lon'])
 
      #find all years of available resource data
      yearList = [int(filename[-7:-3]) for filename in os.listdir(processed_merra_path) if filename != processed_merra_name+'.nc' and filename.startswith(processed_merra_name)]
