@@ -5,7 +5,6 @@ This program is written to simulate solar and wind power generation at a large s
 
 
 ## Download MERRA Data
-_________
 
 ### 1. Create an [Earth Data Account](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) from NASA
 
@@ -59,7 +58,6 @@ _________
 >`<username>` is your earth data account username and `<filename>` is the file path and name of the text document (includin .txt at end of file name) from your local position. The wget command can be run from anywhere but I like to run it in the same folder for ease of use letting the `<filename>` only being the filename.txt instead of having to include the file path. You'll be prompted for your earth data password after the command is run and then after inputting your password the download should start for all the NetCDF files in that text document. 
 
 ## Process MERRA Data and Generate Power Generation Profiles
-____________________
 
 ### 1. Download Python Libraries
 
