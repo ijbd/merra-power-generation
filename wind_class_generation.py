@@ -13,16 +13,16 @@ def main(yearList, latLength, longLength, excelFilePath, rawDataFilePath):
 
     Args:
     ----------
-    `yearList` (integer list): years for which raw data is availbile to average wind speeds
+    `yearList` (list): years for which raw data is available to average wind speeds
 
-    `latLength` (integer): amount of unique latitudes in region (for WECC latLength is 37)
+    `latLength` (int): amount of unique latitudes in region (for WECC latLength is 37)
 
-    `longLength` (integer): amount of unique longitudes in region (for WECC longLength is 31)
+    `longLength` (int): amount of unique longitudes in region (for WECC longLength is 31)
 
     `excelFilePath` (str): file path for where IEC wind class will be written to (default is in same folder as script)
 
     `rawDataFilePath` (str): file path to where cordDataWestCoastYear or other regions raw data is located 
-    (should be only begging of file name and able to add years to end of str to load in raw data)
+    (should be only beginning of file name and able to add years to end of str to load in raw data)
 
     Example:
         rawDataFilePath = 'cordDataWestCoastYear'
@@ -117,8 +117,8 @@ def main(yearList, latLength, longLength, excelFilePath, rawDataFilePath):
     #if file path already exists, changes filepath to a new excel worksheet with unique time in format of day_month_year hour_minute_second
     if os.path.isfile(filePath):
         print("Tried overwriting file " + filePath + "\n")
-        dt_string = datetime.now().strftime("%d_%m_%Y %H_%M_%S")
-        filePath = "Run_" + dt_string + ".xlsx"
+        dt_string = datetime.now().strftime("%d_%m_%Y_%H_%M_%S")
+        filePath = filePath[:-5] + dt_string + ".xlsx"
         print("Instead wrote to " + filePath)
 
     df.to_excel(excel_writer = filePath)

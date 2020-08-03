@@ -13,10 +13,8 @@
 
 year=$1
 region=$2
-EIC_wind_class="True" #Use excel map for every coordinate
-make_wind_class="False"
 
-python -u powGen_impl_beta.py $year $region $EIC_wind_class $make_wind_class
+python -u powGen_impl_beta.py $year $region
 
 echo "PowGen complete for $region, $year"
     
