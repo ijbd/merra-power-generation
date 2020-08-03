@@ -28,7 +28,7 @@ else:
      processed_merra_file = processed_merra_path + processed_merra_name
 
      # get lat/lons
-     lat, lon = get_lat_lon(processed_merra_file)
+     lat, lon = get_lat_lon(processed_merra_file+str(start_year)+'.nc')
 
      #find all years of available resource data
      yearList = [int(filename[-7:-3]) for filename in os.listdir(processed_merra_path) if filename != processed_merra_name+'.nc' and filename.startswith(processed_merra_name)]
