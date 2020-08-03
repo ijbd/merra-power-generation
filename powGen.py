@@ -23,15 +23,15 @@ else:
      print('Generating IEC turbine class spreadsheet before running slurm jobs. This shouldn\'t take more than 10 minutes.', flush=True)
 
      processed_merra_path = root_directory + 'merraData/resource/' + region + '/processed/'
-     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear' + str(year) + '.nc'
-     else: processed_merra_name = 'processedMERRA' + region+str(year)+'.nc'
+     if region == "wecc": processed_merra_name = 'cordDataWestCoastYear'
+     else: processed_merra_name = 'processedMERRA'
      processed_merra_file = processed_merra_path + processed_merra_name
 
      # get lat/lons
      lat, lon = get_lat_lon(processed_merra_file)
 
      #find all years of available resource data
-     yearList = [int(filename[-7:-3]) for filename in os.listdir(processed_merra_path) if len(filename == processed_merra_name) and filename.startswith(processed_merra_name[:-7])]
+     yearList = [int(filename[-7:-3]) for filename in os.listdir(processed_merra_path) if filename != processed_merra_name+'.nc' and filename.startswith(processed_merra_name)]
 
      print(yearList)
 
