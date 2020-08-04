@@ -8,7 +8,7 @@ This program is written to simulate solar and wind power generation at a large s
 
 ### 1. Create an [Earth Data Account](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) from NASA
 
-### 2. Collect variables from [Radiation Diagnostic](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) and [Single-Level Diagnostic](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) Datasets
+### 2. Collect variables from the [Radiation](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) and [Single-Level](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) Datasets
 
 - Get a text file that specifies what to download. On the two links above, there is a Subset / Get Data box on the right-hand side. Clicking this will open the different options you can select for the MERRA files. Change the Download Method to  OPeNDAP  and then select the time period, region, and variables. **Make sure the "Use ‘Refine Region’ for geo-spatial submitting" option is checked** or it will not crop the NetCDF file. Set the output format to NetCDF and then hit Get Data. It will then require an earth data account for you to download the text document containing each NetCDF file in it with the specified parameters.
 
