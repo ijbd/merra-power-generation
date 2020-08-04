@@ -27,7 +27,7 @@ This program is written to simulate solar and wind power generation at a large s
 | SLV | surface_pressure |
 | RAD | surface_incoming_shortwave_flux |
 
-### 3. Transfer text files over by WinSCP to your Great Lakes home directory
+### 3. Transfer text files with WinSCP to your Great Lakes home directory
 
 Create a directory in the existing MERRA folder for your region:
 
@@ -56,7 +56,7 @@ Run this command:
 
 `<username>` is your earth data account username and `<filename>` is the file path and name of the text document (includin .txt at end of file name) from your local position. The wget command can be run from anywhere but I like to run it in the same folder for ease of use letting the `<filename>` only being the filename.txt instead of having to include the file path. You'll be prompted for your earth data password after the command is run and then after inputting your password the download should start for all the NetCDF files in that text document. 
 
-## Process MERRA Data and Generate Power Generation Profiles
+## Process MERRA Data and Simulate Power Generation Profiles
 
 ### 1. Download Python Libraries
 
