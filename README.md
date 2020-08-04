@@ -8,24 +8,24 @@ This program is written to simulate solar and wind power generation at a large s
 
 ### 1. Create an [Earth Data Account](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) from NASA
 
-### 2. Collect [Radiation Diagnostic](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) and [Single-Level Diagnostic](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) Data
+### 2. Collect variables from [Radiation Diagnostic](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) and [Single-Level Diagnostic](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) Datasets
 
-Get a text file that specifies what to download. On the two links above, there is a Subset / Get Data box on the right-hand side. Clicking this will open the different options you can select for the MERRA files. Change the Download Method to  OPeNDAP  and then select the time period, region, and variables. **Make sure the "Use ‘Refine Region’ for geo-spatial submitting" option is checked** or it will not crop the NetCDF file. Set the output format to NetCDF and then hit Get Data. It will then require an earth data account for you to download the text document containing each NetCDF file in it with the specified parameters.
+- Get a text file that specifies what to download. On the two links above, there is a Subset / Get Data box on the right-hand side. Clicking this will open the different options you can select for the MERRA files. Change the Download Method to  OPeNDAP  and then select the time period, region, and variables. **Make sure the "Use ‘Refine Region’ for geo-spatial submitting" option is checked** or it will not crop the NetCDF file. Set the output format to NetCDF and then hit Get Data. It will then require an earth data account for you to download the text document containing each NetCDF file in it with the specified parameters.
 
 #### Required Variables
-From SLV (link above): 
-- 2-meter_air_temperature
-- 2-meter_eastward_wind
-- 2-meter_northward_wind
-- 2-meter_specific_humidity
-- 10-meter_eastward_wind
-- 10-meter_northward_wind
-- eastward_wind_at_50_meters
-- northward_wind_at_50_meters 
-- surface_pressure
- 
- From RAD (link above):
- - surface_incoming_shortwave_flux
+
+| Dataset    | Variable Name |
+| ----------- | ----------- |
+| SLV | 2-meter_air_temperature |
+| SLV | 2-meter_eastward_wind |
+| SLV | 2-meter_northward_wind |
+| SLV | 2-meter_specific_humidity |
+| SLV | 10-meter_eastward_wind |
+| SLV | 10-meter_northward_wind |
+| SLV | eastward_wind_at_50_meters |
+| SLV | northward_wind_at_50_meters |
+| SLV | surface_pressure |
+| RAD | surface_incoming_shortwave_flux |
 
 ### 3. Transfer text files over by WinSCP to your Great Lakes home directory
 
