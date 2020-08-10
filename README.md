@@ -80,7 +80,21 @@ e.g.
 
 **Note: This script is currently not included in this repository**
 
-### 3. Generate Capacity Values with the **powGen** script:
+### 3. Generate offshore boundaries with the **generate_offshore_main** script:
+
+The script calls generate_offshore_bounds which in turns generates a readable excel file in the same format as processed MERRA data using a pre processed offshoreBoundaries netCDF. There is no need to create a shapefile and then convert to readable form.
+
+One can run the script:
+
+    generate_offshore_main.py
+
+Then it will prompt you in order: min lon, max lon, min lat, and max lat of one's MERRA region
+
+(uses MERRA assumptions of latitude being spaced by .5 and longitude being spaced .625)
+
+(offshoreBoundaries data comes from https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-ocean/)
+
+### 4. Generate Capacity Values with the **powGen** script:
 
 This script can be run for single or multiple years.
  

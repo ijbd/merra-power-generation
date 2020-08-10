@@ -226,7 +226,12 @@ def run_wp(wind_srw, wind_class, power_curve):
     d = wp.default("WindPowerNone")
 
     #assigning values for respective wind power classes
-    if wind_class == 1:
+    if  wind_class == 4:
+        #here is where one can put in the specific power class data for OFFSHORE turbines(may need to restructure as there may not be a single offshore turbine needed)
+        #Currently treating them as a IEC level 1
+        powerout = power_curve["Composite IEC Class I"]["powerout"]
+        speed = power_curve["Composite IEC Class I"]["speed"]
+    elif wind_class == 1:
         powerout = power_curve["Composite IEC Class I"]["powerout"]
         speed = power_curve["Composite IEC Class I"]["speed"]
     elif  wind_class == 2:
