@@ -29,11 +29,6 @@ def main(minLon, maxLon,minLat, maxLat):
 
     `maxLat` (float): maximum latitude value in MERRA dataset
 
-
-    Returns:
-    ----------
-    `filePath` (str): file path to where offshore values are located in a similar format used by wind_class_generation
-
     """
 
 
