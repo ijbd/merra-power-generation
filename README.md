@@ -81,7 +81,42 @@ e.g.
 
 **Note: This script is currently not included in this repository**
 
-### 3. Generate Capacity Values with the **powGen** script:
+### 3. Generate offshore boundaries with the **generate_boundaries_main** script:
+
+The script calls generate_boundaries which in turns generates a readable excel file in the same format as processed MERRA data using a pre processed offshoreBoundaries netCDF. There is no need to create a shapefile and then convert to readable form for offshore data. Format of excel file: rows: (lat values) cols: (long values)
+
+One can run the script:
+
+    generate_boundaries_main.py
+
+Then it will prompt you in order to enter: min lon, max lon, min lat, and max lat of one's MERRA region, IMPORTANT: one must hit enter (do not enter any value) when prompted to implement state bounds to generate offshore bounds. 
+
+(uses MERRA assumptions of latitude being spaced by .5 and longitude being spaced .625)
+
+(offshoreBoundaries data comes from https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-ocean/)
+
+
+
+
+**Directions for generating single or multi state boundaries:**
+
+Download the respective files at https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2012&layergroup=States+%28and+equivalent%29 and follow the methods of steps two and three at https://disc.gsfc.nasa.gov/information/howto?keywords=state%20by%20state%20data&title=How%20to%20Display%20a%20Shapefile-based%20Data%20Subset%20with%20GrADS to uncompress and create a mask file for each state. (various packages may need to be installed). Changing the resolution of generated netcdfs may also affect the resolution of bounds.
+
+Example command run:
+
+    gdal_rasterize -burn 1 -where STUSPS='STATE ABBREV' -te -180 -50 180 50 -ts 1440 1440 -of netCDF tl_2012_us_state.shp STATEFILENAME.nc
+
+where STATE ABBREV is the states abbreviation, e.g. washington=WA, california=CA, and STATEFILENAME is the soon to be generated netcdf containing region's boundaries.
+
+Once a mask file for each state is generated, place the files in the stateNetcdfs folder (texas_bounds(placeholder).nc is present but should be deleted if texas is not a desired region). Any netcdfs included in this folder will be included in the generation of the main boundaries file.
+
+Run the prior command of **generate_boundaries_main.py** and input the same latitudes and longitudes, but when prompted to **Implement state bounds?** any input (besides enter) will trigger the generation of an excel file named "state_MERRA_Format_Bounds.xlsx" with cells inside the desired region assigned 1 and outside the region 0.
+
+
+*Example state boundaries netcdfs are located in the folder **exampleStateNetcdfs***
+
+*Script will overwrite any current files if already run prior*
+### 4. Generate Capacity Values with the **powGen** script:
 
 This script can be run for single or multiple years.
  
