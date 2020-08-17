@@ -6,7 +6,7 @@ This program is written to simulate solar and wind power generation at a large s
 
 ## Download MERRA Data
 
-### 1. Create an [Earth Data Account](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) from NASA
+### 1. Create an [Earth Data Account](https://urs.earthdata.nasa.gov/users/new) from NASA
 
 ### 2. Collect variables from the [Radiation](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) and [Single-Level](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) Datasets
 
