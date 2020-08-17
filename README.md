@@ -106,7 +106,7 @@ Example command run:
 
     gdal_rasterize -burn 1 -where STUSPS='STATE ABBREV' -te -180 -50 180 50 -ts 1440 1440 -of netCDF tl_2012_us_state.shp STATEFILENAME.nc
 
-where STATE ABBREV is the states abbreviation, e.g. washington=WA, california=CA, and STATEFILENAME is the soon to be generated netcdf of bounds
+where STATE ABBREV is the states abbreviation, e.g. washington=WA, california=CA, and STATEFILENAME is the soon to be generated netcdf containing region's boundaries.
 
 Once a mask file for each state is generated, place the files in the stateNetcdfs folder (texas_bounds(placeholder).nc is present but should be deleted if texas is not a desired region). Any netcdfs included in this folder will be included in the generation of the main boundaries file.
 
