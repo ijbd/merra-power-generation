@@ -108,7 +108,7 @@ Example command run:
 
 where STATE ABBREV is the states abbreviation, e.g. washington=WA, california=CA, and STATEFILENAME is the soon to be generated netcdf of bounds
 
-Once a mask file for each state is generated, place the files in the stateNetcdfs folder. Any netcdfs included in this folder will be included in the generation of the main boundaries file.
+Once a mask file for each state is generated, place the files in the stateNetcdfs folder (texas_bounds(placeholder).nc is present but should be deleted if texas is not a desired region). Any netcdfs included in this folder will be included in the generation of the main boundaries file.
 
 Run the prior command of **generate_boundaries_main.py** and input the same latitudes and longitudes, but when prompted to **Implement state bounds?** any input (besides enter) will trigger the generation of an excel file named "state_MERRA_Format_Bounds.xlsx" with cells inside the desired region assigned 1 and outside the region 0.
 
