@@ -25,6 +25,12 @@ minLon = float(input("Min lon: "))
 maxLon = float(input("Max lon: "))
 minLat = float(input("Min lat: "))
 maxLat = float(input("Max lat: "))
-implementStateBounds = bool(input("Implement State Bounds? (leave blank if NA)"))
+implementStateBounds = input("Implement State Bounds? (y/n): ")
+
+while implementStateBounds != 'y' and implementStateBounds != 'n':
+    implementStateBounds = input("Please type \'y\' or \'n\'): ")
+
+if implementStateBounds == 'y': implementStateBounds = True
+else: implementStateBounds = False
 
 main(minLon, maxLon,minLat, maxLat,implementStateBounds)
