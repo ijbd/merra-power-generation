@@ -89,7 +89,7 @@ One can run the script:
 
     generate_boundaries_main.py
 
-Then it will prompt you in order to enter: min lon, max lon, min lat, and max lat of one's MERRA region, IMPORTANT: one must hit enter (do not enter any value) when prompted to implement state bounds to generate offshore bounds. 
+Then it will prompt you in order to enter: min lon, max lon, min lat, and max lat of one's MERRA region, and "Implement State Bounds? (y/n): ", if the goal is for implementing offshore turbines type 'n' (y option is for future development)
 
 (uses MERRA assumptions of latitude being spaced by .5 and longitude being spaced .625)
 
