@@ -93,7 +93,7 @@ def main(minLon, maxLon,minLat, maxLat, implementStateBounds = False):
         stateFiles = os.listdir( os.path.abspath("stateNetcdfs"))
         #go state by state building up region array
         for stateFile in stateFiles:
-            regionArray += generateBounds("stateNetcdfs\\" + stateFile,latitudeRange,longitudeRange)
+            regionArray += generateBounds("stateNetcdfs/" + stateFile,latitudeRange,longitudeRange)
     else:
         regionFilename = "offshoreBoundaries.nc"
         regionArray = generateBounds(regionFilename,latitudeRange,longitudeRange)
