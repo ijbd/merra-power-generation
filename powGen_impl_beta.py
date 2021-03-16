@@ -286,6 +286,8 @@ def main(year,region):
     else: processed_merra_name = 'processedMERRA' + region+str(year)+'.nc'
     processed_merra_file = processed_merra_path + processed_merra_name
     destination_file_path = root_directory + 'merraData/cfs/'+region+'/'
+    if not os.path.exists(destination_file_path):
+        os.system('mkdir '+destination_file_path)
 
     #get latitude and longitude arrays
     lat, lon = get_lat_lon(processed_merra_file)
