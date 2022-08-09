@@ -12,6 +12,7 @@ This program is written to simulate solar and wind power generation at a large s
 
 - Get a text file that specifies what to download. On the two links above, there is a Subset / Get Data box on the right-hand side. Clicking this will open the different options you can select for the MERRA files. Change the Download Method to  OPeNDAP  and then select the time period, region, and variables. **Make sure the "Use ‘Refine Region’ for geo-spatial submitting" option is checked** or it will not crop the NetCDF file. Set the output format to NetCDF and then hit Get Data. It will require your earth data account. This will generate a text file containing a list of download links for MERRA data with the specified parameters.
 
+**To make sure each of the datasets bounds align with each other: copy one region's bounds in the textbox above the map then directly input those lat/long coords for the other dataset**
 
 #### Required Variables
 
