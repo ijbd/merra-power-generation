@@ -1,13 +1,13 @@
 import unittest
-import sys
-import os
+from sys import path
+from pathlib import Path 
 
-sys.path.insert(0,os.path.join(os.path.dirname(__file__),'..','src'))
+path.insert(0, Path(Path(__file__), '..', 'src')
 
 class TestPowerGeneration(unittest.TestCase):
 
 	def test_import(self):
-		from power_generation import main
+		from powGen_impl_beta import main
 		pass
 
 if __name__ == "__main__":
