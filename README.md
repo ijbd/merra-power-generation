@@ -1,20 +1,36 @@
-PowGen
+MERRA Power Generation
 =====
 
-This program is written to simulate solar and wind power generation at a large scale using the National Renewable Energy Laboratory's System Advisory Model (SAM). Weather data is acquired from NASA's Modern-Era Retrospective analysis for Research and Applications (MERRA) 2 dataset. To approximate Direct Normal Irradiance and Diffuse Horizotal Irradiance from Global Horizontal Irradicatiance for PV simulations, we use the Sandia National Laboratory PVlib Python module. **Note: Some of these instructions are specifically for University of Michigan Researchers, please reach out to ijbd@umich.edu if you have any questions!**
+This program uses NREL's System Advisor Model ([SAM](https://sam.nrel.gov/software-development-kit-sdk/pysam.html)) to estimate hourly solar and wind capacity factors. We use meteorological data from NASA Modern-Era Retrospective analysis for Research and Applications (MERRA) 2 dataset. Capacity factors are saved in [NetCDF](https://www.unidata.ucar.edu/software/netcdf/) file format. 
 
 
-## Download MERRA Data
+## Instructions
 
-### 1. Create an [Earth Data Account](https://urs.earthdata.nasa.gov/users/new) from NASA
+### 1. Clone this repository
 
-### 2. Collect variables from the [Radiation](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) and [Single-Level](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) Datasets
+    git clone https://github.com/ijbd/merra-power-generation
 
-- Get a text file that specifies what to download. On the two links above, there is a Subset / Get Data box on the right-hand side. Clicking this will open the different options you can select for the MERRA files. Change the Download Method to  OPeNDAP  and then select the time period, region, and variables. **Make sure the "Use ‘Refine Region’ for geo-spatial submitting" option is checked** or it will not crop the NetCDF file. Set the output format to NetCDF and then hit Get Data. It will require your earth data account. This will generate a text file containing a list of download links for MERRA data with the specified parameters.
+### 2. Create a [NASA Earth Data Account](https://urs.earthdata.nasa.gov/users/new)
 
-**To make sure each of the datasets bounds align with each other: copy one region's bounds in the textbox above the map then directly input those lat/long coords for the other dataset**
+### 3. Collect variables from the [MERRA Radiation](https://disc.gsfc.nasa.gov/datasets/M2T1NXRAD_5.12.4/summary?keywords=%22MERRA-2%22) (RAD) dataset
 
-#### Required Variables
+- Click **Subset / Get Data** on the right-hand side of the link above
+- Expand **Download Method**, select *OPeNDAP*
+- Expand **Refine Date Range**, include a whole year
+- Expand **Refine Region**, select according to your research needs. 
+- **Make sure to check the "Use ‘Refine Region’ for geo-spatial submitting" option**
+- Expand **Variables**, select variables according to [Table 1](#table-1-required-variables) 
+- Expand **File Format**, select *netCDF*
+- Click **Get Data**
+  
+    This will generate a text file containing a list of download links. In step 5, we will use this file to download daily MERRA data
+
+### 4. Collect variables from the [MERRA Single-Level](https://disc.gsfc.nasa.gov/datasets/M2T1NXSLV_5.12.4/summary?keywords=%22MERRA-2%22) (SLV) dataset
+
+- Repeat the description in step 2 for the link above, using the variables in [Table 1](#table-1-required-variables) for the *RAD* dataset
+- **Make sure the selected Date Range and Region are consistent between steps 2 and 3**
+
+#### **Table 1:** Required Variables
 
 | Dataset    | Variable Name |
 | ----------- | ----------- |
@@ -29,34 +45,19 @@ This program is written to simulate solar and wind power generation at a large s
 | SLV | surface_pressure |
 | RAD | surface_incoming_shortwave_flux |
 
-### 3. Transfer text file with WinSCP to your Great Lakes home directory
+### 5. Download daily MERRA files
 
-Create a directory in the existing MERRA folder for your region:
+- Create a download destination directory. This can be anywhere, and it will hold all of the MERRA data. We recommend creating a new folder called `merra` within the `input` folder of this repository.
+- Copy the download link files from steps 2 and 3 into the download destination directory
+- Download the files into the download destination directory using `wget` or a similar tool
 
-    mkdir /scratch/mtcraig_root/mtcraig1/shared_data/merraData/resource/<region name>
+      wget --auth-no-challenge=on --keep-session-cookies --user=\<username\>--ask-password --content-disposition -i \<filename\>
 
-For consistency, replace `<region name>` with the name of your region in lower case (e.g. "wecc", "ercot").
-
-Create two directories within that folder:
-
-    mkdir /scratch/.../resource/<region name>/raw
-    mkdir /scratch/.../resource/<region name>/processed
-
-Copy the MERRA text file into the `raw/` folder from your home directory
-
-    cp <name of text file> /scratch/.../resource/<region name>/raw/
-
-### 4. Download MERRA NetCDF files via command line
-
-Go to the `raw/` folder with the MERRA text file.
-
-    cd /scratch/.../resource/<region name>/raw
-
-Run this command: 
-
-    wget --auth-no-challenge=on --keep-session-cookies --user=<username> --ask-password --content-disposition -i <filename> 
-
-`<username>` is your earth data account username and `<filename>` is the file path and name of the text document (includin .txt at end of file name) from your local position. The wget command can be run from anywhere but I like to run it in the same folder for ease of use letting the `<filename>` only being the filename.txt instead of having to include the file path. You'll be prompted for your earth data password after the command is run and then after inputting your password the download should start for all the NetCDF files in that text document. 
+  - `<username>` is your earth data account username
+  - `<filename>` is the file path and name of the download link text document (including .txt at end of file name)
+  - You will be prompted for your earth data password
+  
+    This command downloads every file in the download link text document. It will take about one hour for a year of data, but you should see progress every minute or so
 
 ## Process MERRA Data and Simulate Power Generation Profiles
 
@@ -128,6 +129,8 @@ This script can be run for single or multiple years.
 Before submitting the slurm jobs, the powGen script will generate the IEC turbine class map from available wind resources for the region if they do not already exist. This shouldn't take more than 5-10 minutes.
 
 **Note: This script will call one or multiple slurm jobs and will incur a charge**
+
+This data output of this repository were restructured on September 29th, 2022. For previous versions, see commit 379f57034726e9a8439a37e37a83d520ef99ba66
 
 _______
 I'm happy to help in any way I can! Feel free to email me: ijbd@umich.edu
