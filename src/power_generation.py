@@ -18,8 +18,10 @@ import PySAM.Windpower as wp
 logging.basicConfig(level=logging.DEBUG)
 
 PROJECT_PATH = Path(__file__).parents[1]
+HOURS_PER_YEAR = 24*365
 ATM_PER_PASCAL = 1 / 101325
 KELV_CELSIUS_OFFSET = 273.15
+
 
 class MerraPowerGeneration:
     def __init__(
@@ -125,12 +127,10 @@ class MerraPowerGeneration:
         # evaluate wind turbine class by annual median wind speed
         median_wind_speed = np.median(wind_speed_100, axis=2)
 
-        print(median_wind_speed.astype(int))
-        # distribute wind locations among 3 IEC turbine classes
+        # classify wind turbine class by median wind speed
         wind_turbine_class = np.where(median_wind_speed >= 8, 2, 3)
         wind_turbine_class = np.where(median_wind_speed >= 9, 1, wind_turbine_class)
 
-        print(wind_turbine_class)
         return wind_turbine_class
         
     def _process_merra_data(self):
@@ -165,11 +165,21 @@ class MerraPowerGeneration:
 
     def _load_power_curves(self):
         self.wind_power_curves = defaultdict(list)
+
+        wind_power_curve_fields = {
+            'Wind Speed'                : 'wind_speed',
+            'Composite IEC Class I'     : 1,
+            'Composite IEC Class II'    : 2,
+            'Composite IEC Class III'   : 3
+        }
+
         with open(self.wind_power_curve_file) as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
                 for key in row:
-                    self.wind_power_curves[key].append(row[key])
+                    self.wind_power_curves[
+                        wind_power_curve_fields[key]
+                    ].append(float(row[key]))
 
     def _load_masks(self):
         if self.mask_files:
@@ -182,12 +192,11 @@ class MerraPowerGeneration:
     def _initialize_solar_model(self):
         """Still need to define tilt
         """
-        return
-        self.solar_model = pv.default('PVWattsNone')
+        self.solar_model = pv.new()
 
         self.solar_model.SystemDesign.array_type = 0
         self.solar_model.SystemDesign.system_capacity = 1000
-        self.solar_model.SystemDesign.aziumuth = 180
+        self.solar_model.SystemDesign.azimuth = 180
         self.solar_model.SystemDesign.dc_ac_ratio = 1.1
         self.solar_model.SystemDesign.inv_eff = 96
         self.solar_model.SystemDesign.losses = 14
@@ -207,7 +216,7 @@ class MerraPowerGeneration:
     def _initialize_dataset(self, dataset):
         dataset.createDimension('lat', len(self.variables['lat']))
         dataset.createDimension('lon', len(self.variables['lon']))
-        dataset.createDimension('time', 8760)
+        dataset.createDimension('time', HOURS_PER_YEAR)
         dataset.year = self.year
 
         # create primary variables
@@ -294,27 +303,72 @@ class MerraPowerGeneration:
 
         return solar_resource_data
 
-    def simulate_solar(self, solar_resource_data):
+    def simulate_solar(self, solar_resource_data, tilt):
         # assign parameters and resource data
-        self.solar_model.SystemDesign.tilt = abs(solar_resource_data['lat'])
+        self.solar_model.SystemDesign.tilt = tilt
         self.solar_model.solar_resource_data = solar_resource_data
         self.solar_model.execute()
         solar_generation = np.array(self.solar_model.Outputs.ac)
 
         return solar_generation / (self.solar_model.SystemDesign.system_capacity * 1000)
 
-    def _get_wind_resource_data(self, lat_idx, lat, lon_idx, lon):
+    def _get_wind_resource_data(self, lat_idx, lon_idx):
+        """This function has some magic so that input data formatting fits 
+        with what PySAM's expectations.
+        
+        From https://github.com/NREL/pysam/blob/d269cab0dbcaeaa2e5126decb9d1114e6dd83dc4/files/ResourceTools.py
+        """
         wind_resource_data = {
-            ''
+            'heights' : [],
+            'fields' : [],
+            'data' : []            
         }
+
+        # define fields
+        field_names = ('temperature', 'pressure', 'speed', 'direction')
+
+        fields = [
+            (2, 'temperature'),
+            (2, 'pressure'),
+            (2, 'speed'),
+            (10, 'speed'),
+            (50, 'speed'),
+            (50, 'direction')
+        ]
+
+        # map fields to variables
+        field_variables = {
+            (2, 'temperature') : 'temperature_c',
+            (2, 'pressure') : 'pressure_atm',
+            (2, 'speed') : 'wind_speed_2_m_per_s',
+            (10, 'speed') : 'wind_speed_10_m_per_s',
+            (50, 'speed') : 'wind_speed_50_m_per_s',
+            (50, 'direction') : 'wind_direction_deg',
+        }
+
+        for height, field_name in fields:
+            wind_resource_data['heights'].append(height)
+            wind_resource_data['fields'].append(field_names.index(field_name) + 1)
+
+        for hour in range(HOURS_PER_YEAR):
+            data_row = [
+                self.variables[field_variables[field]][lat_idx, lon_idx, hour]
+                for field in fields
+            ]
+            wind_resource_data['data'].append(data_row)
 
         return wind_resource_data
 
-    def simulate_wind(self, wind_resource_data, wind_class):
+    def simulate_wind(self, wind_resource_data, wind_turbine_class):
         # assign parameters and resource data
         self.wind_model.Resource.wind_resource_data = wind_resource_data
-        self.wind_model.Turbine.wind_turbine_powercurve_powerout = self.wind_power_curves['speed']
-        self.wind_model.Turbine.wind_turbine_powercurve_windspeeds = self.wind_power_curves[wind_class]
+        self.wind_model.Turbine.wind_turbine_powercurve_windspeeds = self.wind_power_curves[
+            'wind_speed'
+        ]
+        self.wind_model.Turbine.wind_turbine_powercurve_powerout = self.wind_power_curves[
+            wind_turbine_class
+        ]
+        self.wind_model.execute()
         wind_generation = np.array(self.wind_modeOutputs.gen) 
 
         return wind_generation / self.wind_model.Farm.system_capacity 
@@ -336,6 +390,8 @@ class MerraPowerGeneration:
             for lat_idx, lat in enumerate(self.variables['lat']):
                 for lon_idx, lon in enumerate(self.variables['lon']):
                     # get solar resource data
+                    
+                    """
                     solar_resource_data = self._get_solar_resource_data(
                         lat_idx,
                         lat,
@@ -344,24 +400,29 @@ class MerraPowerGeneration:
                     )
 
                     # run PySAM solar
-                    solar_capacity_factors = self.simulate_solar(solar_resource_data)
+                    solar_capacity_factors = self.simulate_solar(
+                        solar_resource_data,
+                        abs(lat)
+                    )
 
                     # write solar generation
-                    pass
+                    dataset.variables['solar_capacity_factor][lat_idx, lon_idx] = solar_capacity_factors
+                    """
 
                     # get wind resource data
                     wind_resource_data = self._get_wind_resource_data(
                         lat_idx,
-                        lat,
-                        lon_idx,
-                        lon
+                        lon_idx
                     )
 
                     # run PySAM wind
-                    wind_capacity_factors = self.simulate_wind(wind_resource_data)
+                    wind_capacity_factors = self.simulate_wind(
+                        wind_resource_data, 
+                        self.variables['wind_turbine_iec_class'][lat_idx, lon_idx]
+                        )
 
                     # write wind generation
-                    pass
+                    dataset.variables['wind_capacity_factor'][lat_idx, lon_idx] = wind_capacity_factors
 
 if __name__ == "__main__":
     parser = ArgumentParser()
