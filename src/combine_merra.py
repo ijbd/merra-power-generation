@@ -23,7 +23,6 @@ MERRA_VARIABLES = [
     'V10M',
     'V50M',
     'T2M',
-    'QV2M',
     'PS',
     'SWGDN'
 ]
