@@ -5,13 +5,13 @@ from typing import List
 import logging
 import math
 import csv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from netCDF4 import Dataset
 import numpy as np
 import pandas as pd
 import pvlib
-import PySAM.Pvwattsv7 as pv
+import PySAM.Pvwattsv8 as pv
 import PySAM.Windpower as wp
 
 # setup logging
@@ -21,6 +21,7 @@ PROJECT_PATH = Path(__file__).parents[1]
 HOURS_PER_YEAR = 24*365
 ATM_PER_PASCAL = 1 / 101325
 KELV_CELSIUS_OFFSET = 273.15
+NETCDF_FILL_VALUE = 9.83e31
 
 
 class MerraPowerGeneration:
@@ -46,6 +47,14 @@ class MerraPowerGeneration:
         with Dataset(self.combined_merra_file) as dataset:
             self.year = dataset.year
             self.variables = {name : np.array(var[:]) for name, var in dataset.variables.items()}
+
+    @staticmethod
+    def _fill_masked_val(arr: np.ndarray, fill_val: float):
+        return np.where(
+            arr > NETCDF_FILL_VALUE,
+            fill_val,
+            arr
+        )
 
     @staticmethod
     def _get_wind_direction(eastward_velocity, northward_velocity):
@@ -103,9 +112,14 @@ class MerraPowerGeneration:
         height_3):
         """TODO double check this formulation, it seems odd that height_3 is not an input
         """
-        wind_scale = math.log(height_2, height_1)
-        wind_sheer = np.log(wind_speed_height_2 / wind_speed_height_1) / wind_scale
+        wind_scale = math.log(height_2 / height_1)
+        wind_sheer = np.where(
+            np.logical_and(wind_speed_height_1, wind_speed_height_2),
+            np.log(wind_speed_height_2 / wind_speed_height_1),
+            0
+        ) 
         wind_speed_height_3 = wind_speed_height_2 * (2 ** wind_sheer)
+
         return wind_speed_height_3
 
     @staticmethod
@@ -134,11 +148,20 @@ class MerraPowerGeneration:
         return wind_turbine_class
         
     def _process_merra_data(self):
+        logging.info(f'Converting MERRA variables...')
         # pressure in atmospheres
-        self.variables['pressure_atm'] = self.variables['PS'] * ATM_PER_PASCAL
+        self.variables['pressure_atm'] = (self.variables['PS'] * ATM_PER_PASCAL)
+        self.variables['pressure_atm'] = self._fill_masked_val(
+            self.variables['pressure_atm'],
+            1.0
+        )
 
         # temperature in C
         self.variables['temperature_c'] = self.variables['T2M'] - KELV_CELSIUS_OFFSET
+        self.variables['temperature_c'] = self._fill_masked_val(
+            self.variables['temperature_c'],
+            0.0
+        )
 
         # wind speed
         for height in [2, 10, 50]:
@@ -146,6 +169,10 @@ class MerraPowerGeneration:
             self.variables[f'wind_speed_{height}_m_per_s'] = np.sqrt(
                 self.variables[f'V{height}M']**2
                 + self.variables[f'U{height}M']**2
+            )
+            self.variables[f'wind_speed_{height}_m_per_s'] = self._fill_masked_val(
+                self.variables[f'wind_speed_{height}_m_per_s'],
+                0.0
             )
 
         # wind direction
@@ -162,6 +189,10 @@ class MerraPowerGeneration:
 
         # global horizontal irradiance
         self.variables['ghi_w_per_m_2'] = self.variables['SWGDN']
+        self.variables['ghi_w_per_m_2'] = self._fill_masked_val(
+            self.variables['ghi_w_per_m_2'],
+            0.0
+        )
 
     def _load_power_curves(self):
         self.wind_power_curves = defaultdict(list)
@@ -192,7 +223,7 @@ class MerraPowerGeneration:
     def _initialize_solar_model(self):
         """Still need to define tilt
         """
-        self.solar_model = pv.new()
+        self.solar_model = pv.default('PVwattsNone')
 
         self.solar_model.SystemDesign.array_type = 0
         self.solar_model.SystemDesign.system_capacity = 1000
@@ -200,6 +231,7 @@ class MerraPowerGeneration:
         self.solar_model.SystemDesign.dc_ac_ratio = 1.1
         self.solar_model.SystemDesign.inv_eff = 96
         self.solar_model.SystemDesign.losses = 14
+        self.solar_model.AdjustmentFactors.constant = 1.0
 
     def _initialize_wind_model(self):
         """Still need to define powercurve
@@ -243,10 +275,12 @@ class MerraPowerGeneration:
 
         # timestamps
         date_times = pd.date_range(
-            datetime(year, 1, 1),
-            datetime(year, 12, 31)
+            datetime(year, 1, 1, 0),
+            datetime(year, 12, 31, 23),
+            freq=timedelta(hours=1)
         )
         date_times = date_times[(date_times.month != 2) | (date_times.day != 29)]
+        julian_date = date_times.to_julian_date()
 
         # get solar angles
         lat_rad = lat * math.pi / 180
@@ -258,7 +292,7 @@ class MerraPowerGeneration:
             lon, 
             eq_of_time_min
         )
-        hour_angle_deg = pv.solarposition.hour_angle(
+        hour_angle_deg = pvlib.solarposition.hour_angle(
             date_times,
             lon,
             eq_of_time_min
@@ -276,14 +310,14 @@ class MerraPowerGeneration:
             ghi,
             zenith_deg,
             date_times
-        ).fillna(0)
+        ).fillna(0).values
 
         dhi = ghi - dni * np.cos(zenith_rad)
 
-        return dni, dhi
+        return date_times, dni, dhi
 
     def _get_solar_resource_data(self, lat_idx, lat, lon_idx, lon):
-        dni, dhi = self._get_dni_dhi(
+        date_times, dni, dhi = self._get_dni_dhi(
             lat, 
             lon, 
             self.year,
@@ -295,10 +329,15 @@ class MerraPowerGeneration:
             'lon' :     lon,
             'tz' :      0,
             'elev' :    0,
-            'dn' :      dni,
-            'df' :      dhi,
-            'tdry' :    self.variables['temperature_c'][lat_idx, lon_idx, :],
-            'wspd' :    self.variables['wind_speed_2_m_per_s'][lat_idx, lon_idx, :]
+            'year' :    list(date_times.year),
+            'month' :   list(date_times.month),
+            'day' :     list(date_times.day),
+            'hour' :    list(date_times.hour),
+            'minute' :  list(date_times.minute),
+            'dn' :      list(dni),
+            'df' :      list(dhi),
+            'tdry' :    list(self.variables['temperature_c'][lat_idx, lon_idx, :]),
+            'wspd' :    list(self.variables['wind_speed_2_m_per_s'][lat_idx, lon_idx, :])
         }
 
         return solar_resource_data
@@ -306,7 +345,7 @@ class MerraPowerGeneration:
     def simulate_solar(self, solar_resource_data, tilt):
         # assign parameters and resource data
         self.solar_model.SystemDesign.tilt = tilt
-        self.solar_model.solar_resource_data = solar_resource_data
+        self.solar_model.SolarResource.solar_resource_data = solar_resource_data
         self.solar_model.execute()
         solar_generation = np.array(self.solar_model.Outputs.ac)
 
@@ -361,15 +400,15 @@ class MerraPowerGeneration:
 
     def simulate_wind(self, wind_resource_data, wind_turbine_class):
         # assign parameters and resource data
-        self.wind_model.Resource.wind_resource_data = wind_resource_data
         self.wind_model.Turbine.wind_turbine_powercurve_windspeeds = self.wind_power_curves[
             'wind_speed'
         ]
         self.wind_model.Turbine.wind_turbine_powercurve_powerout = self.wind_power_curves[
             wind_turbine_class
         ]
+        self.wind_model.Resource.wind_resource_data = wind_resource_data
         self.wind_model.execute()
-        wind_generation = np.array(self.wind_modeOutputs.gen) 
+        wind_generation = np.array(self.wind_model.Outputs.gen) 
 
         return wind_generation / self.wind_model.Farm.system_capacity 
         
@@ -389,9 +428,8 @@ class MerraPowerGeneration:
             # run power simulation
             for lat_idx, lat in enumerate(self.variables['lat']):
                 for lon_idx, lon in enumerate(self.variables['lon']):
-                    # get solar resource data
-                    
-                    """
+                    logging.info(f'Calculating power generation for {lat:.2f}, {lon:.2f} (lat, lon)...')
+                    # get solar resource data                    
                     solar_resource_data = self._get_solar_resource_data(
                         lat_idx,
                         lat,
@@ -406,8 +444,7 @@ class MerraPowerGeneration:
                     )
 
                     # write solar generation
-                    dataset.variables['solar_capacity_factor][lat_idx, lon_idx] = solar_capacity_factors
-                    """
+                    dataset.variables['solar_capacity_factor'][lat_idx, lon_idx] = solar_capacity_factors
 
                     # get wind resource data
                     wind_resource_data = self._get_wind_resource_data(
@@ -424,7 +461,7 @@ class MerraPowerGeneration:
                     # write wind generation
                     dataset.variables['wind_capacity_factor'][lat_idx, lon_idx] = wind_capacity_factors
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('combined_merra_file', type=Path)
     parser.add_argument('output_file', type=Path)
