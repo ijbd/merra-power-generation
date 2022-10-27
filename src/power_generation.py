@@ -43,6 +43,7 @@ class MerraPowerGeneration:
         self._load_masks()
 
     def _load_merra_data(self):
+        """Open MERRA data from netCDF."""
         logging.info(f'Loading MERRA data from {self.combined_merra_file}...')
         with Dataset(self.combined_merra_file) as dataset:
             self.year = dataset.year
@@ -58,13 +59,7 @@ class MerraPowerGeneration:
 
     @staticmethod
     def _get_wind_direction(eastward_velocity, northward_velocity):
-        """ Get wind travel direction as an angle from due south:
-
-            0 -> due south
-            90 -> due west
-            180 -> due north
-            270 -> due east
-        """
+        """Find wind travel direction (degrees from due south)"""
         # get cases
         eastward = np.logical_and(
             eastward_velocity > 0,
@@ -109,25 +104,24 @@ class MerraPowerGeneration:
         wind_speed_height_1,
         height_2,
         wind_speed_height_2,
-        height_3):
-        """TODO double check this formulation, it seems odd that height_3 is not an input
-        """
-        wind_scale = math.log(height_2 / height_1)
+        height_3
+    ):
+        """Wind profile power law"""
         wind_sheer = np.where(
-            np.logical_and(wind_speed_height_1, wind_speed_height_2),
-            np.log(wind_speed_height_2 / wind_speed_height_1),
+            np.logical_and(wind_speed_height_1 > 0.1, wind_speed_height_2 > 0.1),
+            np.log(wind_speed_height_2 / wind_speed_height_1) / math.log(height_2 / height_1),
             0
-        ) 
-        wind_speed_height_3 = wind_speed_height_2 * (2 ** wind_sheer)
+        )
+        wind_speed_height_3 = wind_speed_height_2 \
+            * (height_3 / height_2) \
+            ** wind_sheer
 
         return wind_speed_height_3
 
     @staticmethod
     def _get_wind_turbine_class(wind_speed_10, wind_speed_50):
-        """TODO: 
-            - Implement offshore mask. 
-            - Add offshore.
-            - Add multi-year
+        """Estimate the IEC wind turbine class based on
+        median wind speed.
         """
         # approximate wind speed at 100 m
         wind_speed_100 = MerraPowerGeneration.scale_wind_height(
@@ -141,13 +135,16 @@ class MerraPowerGeneration:
         # evaluate wind turbine class by annual median wind speed
         median_wind_speed = np.median(wind_speed_100, axis=2)
 
-        # classify wind turbine class by median wind speed
+        # classify wind turbine class by median wind speed.
+        # In order of slowest to fastest wind speeds, 
+        # turbines are assigned classes 3, 2, and 1, respectively.
         wind_turbine_class = np.where(median_wind_speed >= 8, 2, 3)
         wind_turbine_class = np.where(median_wind_speed >= 9, 1, wind_turbine_class)
 
         return wind_turbine_class
         
     def _process_merra_data(self):
+        """Convert units, fill masked values and rename variables."""
         logging.info(f'Converting MERRA variables...')
         # pressure in atmospheres
         self.variables['pressure_atm'] = (self.variables['PS'] * ATM_PER_PASCAL)
@@ -195,8 +192,10 @@ class MerraPowerGeneration:
         )
 
     def _load_power_curves(self):
-        self.wind_power_curves = defaultdict(list)
-
+        """Load wind turbine power curves from file.
+        
+        PySAM requires a relationship between wind speed
+        and output power for wind power modeling"""
         wind_power_curve_fields = {
             'Wind Speed'                : 'wind_speed',
             'Composite IEC Class I'     : 1,
@@ -204,6 +203,12 @@ class MerraPowerGeneration:
             'Composite IEC Class III'   : 3
         }
 
+        self.wind_power_curves = defaultdict(list)
+        
+        # populate power curves.
+        # the file should have three columns with the above fields.
+        # each row should have a wind speed and corresponding
+        # power output
         with open(self.wind_power_curve_file) as csv_file:
             reader = csv.DictReader(csv_file)
             for row in reader:
@@ -221,7 +226,10 @@ class MerraPowerGeneration:
         pass
 
     def _initialize_solar_model(self):
-        """Still need to define tilt
+        """Initialize default parameters.
+        
+        Before running, array tilt and resource data
+        need to be assigned
         """
         self.solar_model = pv.default('PVwattsNone')
 
@@ -234,7 +242,10 @@ class MerraPowerGeneration:
         self.solar_model.AdjustmentFactors.constant = 1.0
 
     def _initialize_wind_model(self):
-        """Still need to define powercurve
+        """Initialize default parameters.
+
+        Before running, turbine power curve and resource data
+        need to be assigned
         """
         self.wind_model = wp.default('WindPowerNone')
         self.wind_model.Resource.wind_resource_model_choice = 0
@@ -246,6 +257,7 @@ class MerraPowerGeneration:
         self.wind_model.Farm.wind_farm_yCoordinates = np.array([0])
 
     def _initialize_dataset(self, dataset):
+        """Create empty netcdf dataset"""
         dataset.createDimension('lat', len(self.variables['lat']))
         dataset.createDimension('lon', len(self.variables['lon']))
         dataset.createDimension('time', HOURS_PER_YEAR)
@@ -268,55 +280,48 @@ class MerraPowerGeneration:
             'double',
             ('lat', 'lon', 'time')
         )
-    
+  
     @staticmethod
     def _get_dni_dhi(lat, lon, year, ghi):
-        """TODO double check documentation on all of these"""
+        """Approximate direct normal irradiance (DNI) and 
+        diffuse horizontal irradiance (DHI).
 
-        # timestamps
+        This is necessary because PySAM needs DNI and DHI, 
+        but MERRA only provides GHI.
+        """
         date_times = pd.date_range(
             datetime(year, 1, 1, 0),
             datetime(year, 12, 31, 23),
             freq=timedelta(hours=1)
         )
         date_times = date_times[(date_times.month != 2) | (date_times.day != 29)]
-        julian_date = date_times.to_julian_date()
-
-        # get solar angles
-        lat_rad = lat * math.pi / 180
-        eq_of_time_min = pvlib.solarposition.declination_spencer71(
-            julian_date
-        )
-        declination_rad = pvlib.solarposition.hour_angle(
-            date_times, 
-            lon, 
-            eq_of_time_min
-        )
-        hour_angle_deg = pvlib.solarposition.hour_angle(
+        solar_position = pvlib.solarposition.get_solarposition(
             date_times,
-            lon,
-            eq_of_time_min
+            lat,
+            lon
         )
-        hour_angle_rad = hour_angle_deg * 180 / math.pi
-        zenith_rad = pvlib.solarposition.solar_zenith_analytical(
-            lat_rad,
-            hour_angle_rad,
-            declination_rad
-        )
-        zenith_deg = zenith_rad * 180 / math.pi
 
-        # calculate irradiance
+        # calculate dni 
+        # https://pvlib-python.readthedocs.io/en/stable/reference/generated/pvlib.irradiance.dirint.html
         dni = pvlib.irradiance.dirint(
             ghi,
-            zenith_deg,
+            solar_position['zenith'],
             date_times
         ).fillna(0).values
 
-        dhi = ghi - dni * np.cos(zenith_rad)
+        # estimate dhi 
+        # https://pvpmc.sandia.gov/modeling-steps/1-weather-design-inputs/irradiance-and-insolation-2/global-horizontal-irradiance/
+        dhi = ghi - dni * np.cos(
+            solar_position['zenith'] * math.pi / 180
+        )
 
         return date_times, dni, dhi
 
     def _get_solar_resource_data(self, lat_idx, lat, lon_idx, lon):
+        """Populate solar resource data.
+        
+        https://nrel-pysam.readthedocs.io/en/master/modules/Pvwattsv7.html
+        """
         date_times, dni, dhi = self._get_dni_dhi(
             lat, 
             lon, 
@@ -343,6 +348,7 @@ class MerraPowerGeneration:
         return solar_resource_data
 
     def simulate_solar(self, solar_resource_data, tilt):
+        """Simulate solar output. Return hourly capacity factors"""
         # assign parameters and resource data
         self.solar_model.SystemDesign.tilt = tilt
         self.solar_model.SolarResource.solar_resource_data = solar_resource_data
@@ -352,10 +358,12 @@ class MerraPowerGeneration:
         return solar_generation / (self.solar_model.SystemDesign.system_capacity * 1000)
 
     def _get_wind_resource_data(self, lat_idx, lon_idx):
-        """This function has some magic so that input data formatting fits 
-        with what PySAM's expectations.
+        """Populate wind resource data.
         
-        From https://github.com/NREL/pysam/blob/d269cab0dbcaeaa2e5126decb9d1114e6dd83dc4/files/ResourceTools.py
+        Primary documentation for PySAM WindPower does not 
+        describe what the wind_resource_data dict should look like.
+        Instead, the format is assumed from PySAM's source code.
+        https://github.com/NREL/pysam/blob/d269cab0dbcaeaa2e5126decb9d1114e6dd83dc4/files/ResourceTools.py
         """
         wind_resource_data = {
             'heights' : [],
@@ -363,9 +371,10 @@ class MerraPowerGeneration:
             'data' : []            
         }
 
-        # define fields
+        # these are the possible fields
         field_names = ('temperature', 'pressure', 'speed', 'direction')
 
+        # these are the fields we have data for
         fields = [
             (2, 'temperature'),
             (2, 'pressure'),
@@ -375,7 +384,8 @@ class MerraPowerGeneration:
             (50, 'direction')
         ]
 
-        # map fields to variables
+        # this dictionary maps the fields we have data for
+        # to their variable names
         field_variables = {
             (2, 'temperature') : 'temperature_c',
             (2, 'pressure') : 'pressure_atm',
@@ -385,10 +395,12 @@ class MerraPowerGeneration:
             (50, 'direction') : 'wind_direction_deg',
         }
 
+        # append header information
         for height, field_name in fields:
             wind_resource_data['heights'].append(height)
             wind_resource_data['fields'].append(field_names.index(field_name) + 1)
 
+        # append hourly data rows
         for hour in range(HOURS_PER_YEAR):
             data_row = [
                 self.variables[field_variables[field]][lat_idx, lon_idx, hour]
@@ -399,6 +411,7 @@ class MerraPowerGeneration:
         return wind_resource_data
 
     def simulate_wind(self, wind_resource_data, wind_turbine_class):
+        """Simulate wind output. Return hourly wind capacity factors"""
         # assign parameters and resource data
         self.wind_model.Turbine.wind_turbine_powercurve_windspeeds = self.wind_power_curves[
             'wind_speed'
@@ -413,6 +426,9 @@ class MerraPowerGeneration:
         return wind_generation / self.wind_model.Farm.system_capacity 
         
     def run(self):
+        """Calculate hourly solar and wind capacity factors,
+        and store output in a netCDF file
+        """
         # initialize output directory
         self.output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -423,6 +439,8 @@ class MerraPowerGeneration:
         # run and store output
         with Dataset(self.output_file, 'w') as dataset:
             # setup empty dataset
+            self.variables['lat'] = self.variables['lat'][:3]
+            self.variables['lon'] = self.variables['lon'][:3]
             self._initialize_dataset(dataset)
 
             # run power simulation
