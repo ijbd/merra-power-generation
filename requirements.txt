@@ -1,0 +1,17 @@
+certifi==2022.6.15
+cftime==1.6.2
+charset-normalizer==2.1.0
+h5py==3.7.0
+idna==3.3
+netCDF4==1.6.1
+NREL-PySAM==3.0.2
+numpy==1.23.3
+pandas==1.5.0
+pvlib==0.9.3
+python-dateutil==2.8.2
+python-dotenv==0.21.0
+pytz==2022.2.1
+requests==2.28.1
+scipy==1.9.2
+six==1.16.0
+urllib3==1.26.11
