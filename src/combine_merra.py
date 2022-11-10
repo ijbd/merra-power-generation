@@ -79,6 +79,7 @@ def transfer_merra_file(combined_dataset: Dataset, merra_dataset: Dataset, day: 
             combined_var = combined_dataset.variables[variable]
             daily_var = merra_dataset.variables[variable]
 
+            # MERRA orders dimensions [time, lat, lon], we reorder [lat, lon, time]
             reordered_daily = np.transpose(daily_var[:], axes=[1, 2, 0])
             
             start_hour = day*24

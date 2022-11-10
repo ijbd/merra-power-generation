@@ -1,8 +1,9 @@
 import unittest
 from sys import path
 from pathlib import Path
+
+import numpy as np
 from netCDF4 import Dataset
-from numpy import array_equal
 
 # update path
 PROJECT_PATH = Path(__file__).parents[1]
@@ -12,7 +13,7 @@ from power_generation import MerraPowerGeneration
 
 class TestPowerGeneration(unittest.TestCase):
 	def setUp(self):
-		self.combined_merra_path = Path(
+		self.combined_merra_file = Path(
 			PROJECT_PATH,
 			'test_data',
 			'combined_merra',
@@ -30,9 +31,6 @@ class TestPowerGeneration(unittest.TestCase):
             'wind_turbine_power_curves.csv'
         )
 
-	def tearDown(self):
-		self.test_output_file.unlink()
-
 	def test_power_generation(self):
 		mpg = MerraPowerGeneration(
 			self.combined_merra_file,
@@ -42,11 +40,31 @@ class TestPowerGeneration(unittest.TestCase):
 
 		mpg.run()
 
-	def test_one_mask(self):
-		pass
+	def test_power_generation_common_sense_solar(self):
+		with Dataset(self.output_file) as output:
+			with Dataset(self.combined_merra_file) as combined:
+				solar_predictor = combined.variables['SWGDN'][:]
+				wind_predictor = np.sqrt(
+					combined.variables['U50M'][:]**2 \
+					+ combined.variables['V50M'][:]**2
+				)
 
-	def test_multi_mask(self):
-		pass
+				solar_cf = output.variables['solar_capacity_factor'][:]
+				wind_cf = output.variables['wind_capacity_factor'][:]
+
+		solar_correlation = np.corrcoef(
+			solar_predictor.flatten(),
+			solar_cf.flatten()
+			)[0,1]
+		wind_correlation = np.corrcoef(
+			wind_predictor.flatten(),
+			wind_cf.flatten()
+			)[0,1]
+
+		correlation_threshold = 0.8
+
+		self.assertGreater(solar_correlation, correlation_threshold)
+		self.assertGreater(wind_correlation, correlation_threshold)
 
 if __name__ == "__main__":
 	unittest.main()

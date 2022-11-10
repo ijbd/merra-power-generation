@@ -30,9 +30,6 @@ class TestCombineMerra(unittest.TestCase):
 				for variable in MERRA_VARIABLES
 			}
 
-	def tearDown(self):
-		self.test_output_file.unlink()
-
 	def test_combined_day_one(self):
 		# open original day 1
 		with Dataset(Path(

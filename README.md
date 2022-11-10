@@ -66,12 +66,17 @@ This program uses NREL's System Advisor Model ([SAM](https://sam.nrel.gov/softwa
     `python -m venv env`
 
 - Install dependent libraries
-  - 
+
+    `python -m pip install -r requirements.txt`
   
 
 ### 7. Combine daily MERRA data into annual dataset
 
-### 7. Simulate power generation using `power_generation.py`
+    `python src/combine_merra.py <merra_directory> <year>`
+
+### 8. Simulate power generation using `power_generation.py`
+
+    `python src/power_generation.py <combined_merra_file> <output_file>`
 
 ## Warning
 
@@ -97,5 +102,5 @@ To see how these features were previously implemented, see commit
 
 _______
 
-I'm happy to help in any way I can! Feel free to email me: ijbd@umich.edu
+I'm happy to help in any way I can! Feel free reach out: ijbd@umich.edu
 
