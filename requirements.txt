@@ -1,4 +1,4 @@
-certifi==2022.6.15
+certifi==2022.12.7
 cftime==1.6.2
 charset-normalizer==2.1.0
 contourpy==1.0.6
