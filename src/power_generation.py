@@ -256,18 +256,24 @@ class MerraPowerGeneration:
         self.wind_model.Farm.wind_farm_xCoordinates = np.array([0])
         self.wind_model.Farm.wind_farm_yCoordinates = np.array([0])
 
-    def _initialize_dataset(self, dataset):
+    def _initialize_dataset(self, dataset: Dataset, include_temperature: bool=False):
         """Create empty netcdf dataset"""
         dataset.createDimension('lat', len(self.variables['lat']))
         dataset.createDimension('lon', len(self.variables['lon']))
         dataset.createDimension('time', HOURS_PER_YEAR)
         dataset.year = self.year
 
-        # create primary variables
+        # create coordinates
         lat_var = dataset.createVariable('lat', 'double', ('lat'))
         lon_var = dataset.createVariable('lon', 'double', ('lon'))
+        time_var = dataset.createVariable('time', 'int64', ('time'))
+        
+        # populate coordinates
         lat_var[:] = self.variables['lat']
         lon_var[:] = self.variables['lon']
+        time_var[:] = np.arange(HOURS_PER_YEAR)
+        time_var.setncattr('unit', 'hours since '+str(self.year)+'-01-01 00:00:00')
+        time_var.setncattr('calendar', 'proleptic_gregorian')
 
         # create capacity factor variables:
         dataset.createVariable(
@@ -280,6 +286,12 @@ class MerraPowerGeneration:
             'double',
             ('lat', 'lon', 'time')
         )
+        if include_temperature:
+            dataset.createVariable(
+                'temperature_c',
+                'double',
+                ('lat', 'lon', 'time')
+            )
   
     @staticmethod
     def _get_dni_dhi(lat, lon, year, ghi):
@@ -425,7 +437,7 @@ class MerraPowerGeneration:
 
         return wind_generation / self.wind_model.Farm.system_capacity 
         
-    def run(self):
+    def run(self, include_temperature: bool=False):
         """Calculate hourly solar and wind capacity factors,
         and store output in a netCDF file
         """
@@ -439,10 +451,8 @@ class MerraPowerGeneration:
         # run and store output
         with Dataset(self.output_file, 'w') as dataset:
             # setup empty dataset
-            self.variables['lat'] = self.variables['lat'][:3]
-            self.variables['lon'] = self.variables['lon'][:3]
-            self._initialize_dataset(dataset)
-
+            self._initialize_dataset(dataset, include_temperature)
+    
             # run power simulation
             for lat_idx, lat in enumerate(self.variables['lat']):
                 for lon_idx, lon in enumerate(self.variables['lon']):
@@ -475,9 +485,13 @@ class MerraPowerGeneration:
                         wind_resource_data, 
                         self.variables['wind_turbine_iec_class'][lat_idx, lon_idx]
                         )
-
+    
                     # write wind generation
                     dataset.variables['wind_capacity_factor'][lat_idx, lon_idx] = wind_capacity_factors
+
+                    # write temperature
+                    if include_temperature:
+                        dataset.variables['temperature_c'][lat_idx, lon_idx] = self.variables['temperature_c'][lat_idx, lon_idx]
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -493,6 +507,10 @@ if __name__ == '__main__':
             'wind_turbine_power_curves.csv'
         )
     )
+    parser.add_argument(
+        '--include-temperature',
+        action='store_true',
+    )
 
     args = parser.parse_args()
 
@@ -502,4 +520,4 @@ if __name__ == '__main__':
         args.wind_power_curve_file
     )
 
-    power_generation.run()
+    power_generation.run(args.include_temperature)
