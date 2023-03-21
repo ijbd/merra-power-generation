@@ -7,7 +7,7 @@ import math
 import csv
 from datetime import datetime, timedelta
 
-from netCDF4 import Dataset
+import xarray as xr
 import numpy as np
 import pandas as pd
 import pvlib
@@ -45,9 +45,11 @@ class MerraPowerGeneration:
     def _load_merra_data(self):
         """Open MERRA data from netCDF."""
         logging.info(f'Loading MERRA data from {self.combined_merra_file}...')
-        with Dataset(self.combined_merra_file) as dataset:
-            self.year = dataset.year
-            self.variables = {name : np.array(var[:]) for name, var in dataset.variables.items()}
+        self.combined_merra_dataset = xr.open_dataset(self.combined_merra_file)
+        self.year = self.combined_merra_dataset.year
+        self.variables = {name : np.array(var[:]) 
+            for name, var in self.combined_merra_dataset.variables.items()
+        }
 
     @staticmethod
     def _fill_masked_val(arr: np.ndarray, fill_val: float):
@@ -256,42 +258,37 @@ class MerraPowerGeneration:
         self.wind_model.Farm.wind_farm_xCoordinates = np.array([0])
         self.wind_model.Farm.wind_farm_yCoordinates = np.array([0])
 
-    def _initialize_dataset(self, dataset: Dataset, include_temperature: bool=False):
+    def _initialize_dataset(self):
         """Create empty netcdf dataset"""
-        dataset.createDimension('lat', len(self.variables['lat']))
-        dataset.createDimension('lon', len(self.variables['lon']))
-        dataset.createDimension('time', HOURS_PER_YEAR)
-        dataset.year = self.year
-
-        # create coordinates
-        lat_var = dataset.createVariable('lat', 'double', ('lat'))
-        lon_var = dataset.createVariable('lon', 'double', ('lon'))
-        time_var = dataset.createVariable('time', 'int64', ('time'))
-        
-        # populate coordinates
-        lat_var[:] = self.variables['lat']
-        lon_var[:] = self.variables['lon']
-        time_var[:] = np.arange(HOURS_PER_YEAR)
-        time_var.setncattr('unit', 'hours since '+str(self.year)+'-01-01 00:00:00')
-        time_var.setncattr('calendar', 'proleptic_gregorian')
-
-        # create capacity factor variables:
-        dataset.createVariable(
-            'solar_capacity_factor',
-            'double', 
-            ('lat', 'lon', 'time')
-        )
-        dataset.createVariable(
-            'wind_capacity_factor',
-            'double',
-            ('lat', 'lon', 'time')
-        )
-        if include_temperature:
-            dataset.createVariable(
-                'temperature_c',
-                'double',
-                ('lat', 'lon', 'time')
+        coords = dict(
+            lat = self.variables['lat'],
+            lon = self.variables['lon'],
+            time = xr.date_range(
+                start=datetime(self.year, 1, 1, 0),
+                freq="1H",
+                periods=HOURS_PER_YEAR
             )
+        )
+    
+        dataset = xr.Dataset(
+            data_vars=dict(
+                solar_capacity_factor=xr.DataArray(
+                    data=np.zeros(self.variables['temperature_c'].shape),
+                    coords=coords
+                ),
+                wind_capacity_factor=xr.DataArray(
+                    data=np.zeros(self.variables['temperature_c'].shape),
+                    coords=coords
+                ),
+                temperature=xr.DataArray(
+                    data=self.variables['temperature_c'],
+                    coords=coords
+                )
+            ),
+            coords=coords
+        )
+
+        return dataset
   
     @staticmethod
     def _get_dni_dhi(lat, lon, year, ghi):
@@ -437,7 +434,7 @@ class MerraPowerGeneration:
 
         return wind_generation / self.wind_model.Farm.system_capacity 
         
-    def run(self, include_temperature: bool=False):
+    def run(self):
         """Calculate hourly solar and wind capacity factors,
         and store output in a netCDF file
         """
@@ -448,50 +445,46 @@ class MerraPowerGeneration:
         self._initialize_solar_model()
         self._initialize_wind_model()
 
-        # run and store output
-        with Dataset(self.output_file, 'w') as dataset:
-            # setup empty dataset
-            self._initialize_dataset(dataset, include_temperature)
-    
-            # run power simulation
-            for lat_idx, lat in enumerate(self.variables['lat']):
-                for lon_idx, lon in enumerate(self.variables['lon']):
-                    logging.info(f'Calculating power generation for {lat:.2f}, {lon:.2f} (lat, lon)...')
-                    # get solar resource data                    
-                    solar_resource_data = self._get_solar_resource_data(
-                        lat_idx,
-                        lat,
-                        lon_idx,
-                        lon
+        # setup empty dataset
+        dataset = self._initialize_dataset()
+
+        # run power simulation
+        for lat_idx, lat in enumerate(self.variables['lat']):
+            for lon_idx, lon in enumerate(self.variables['lon']):
+                logging.info(f'Calculating power generation for {lat:.2f}, {lon:.2f} (lat, lon)...')
+                # get solar resource data                    
+                solar_resource_data = self._get_solar_resource_data(
+                    lat_idx,
+                    lat,
+                    lon_idx,
+                    lon
+                )
+
+                # run PySAM solar
+                solar_capacity_factors = self.simulate_solar(
+                    solar_resource_data,
+                    abs(lat)
+                )
+
+                # write solar generation
+                dataset.variables['solar_capacity_factor'][lat_idx, lon_idx] = solar_capacity_factors
+
+                # get wind resource data
+                wind_resource_data = self._get_wind_resource_data(
+                    lat_idx,
+                    lon_idx
+                )
+
+                # run PySAM wind
+                wind_capacity_factors = self.simulate_wind(
+                    wind_resource_data, 
+                    self.variables['wind_turbine_iec_class'][lat_idx, lon_idx]
                     )
 
-                    # run PySAM solar
-                    solar_capacity_factors = self.simulate_solar(
-                        solar_resource_data,
-                        abs(lat)
-                    )
+                # write wind generation
+                dataset.variables['wind_capacity_factor'][lat_idx, lon_idx] = wind_capacity_factors
 
-                    # write solar generation
-                    dataset.variables['solar_capacity_factor'][lat_idx, lon_idx] = solar_capacity_factors
-
-                    # get wind resource data
-                    wind_resource_data = self._get_wind_resource_data(
-                        lat_idx,
-                        lon_idx
-                    )
-
-                    # run PySAM wind
-                    wind_capacity_factors = self.simulate_wind(
-                        wind_resource_data, 
-                        self.variables['wind_turbine_iec_class'][lat_idx, lon_idx]
-                        )
-    
-                    # write wind generation
-                    dataset.variables['wind_capacity_factor'][lat_idx, lon_idx] = wind_capacity_factors
-
-                    # write temperature
-                    if include_temperature:
-                        dataset.variables['temperature_c'][lat_idx, lon_idx] = self.variables['temperature_c'][lat_idx, lon_idx]
+        dataset.to_netcdf(self.output_file)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -507,10 +500,6 @@ if __name__ == '__main__':
             'wind_turbine_power_curves.csv'
         )
     )
-    parser.add_argument(
-        '--include-temperature',
-        action='store_true',
-    )
 
     args = parser.parse_args()
 
@@ -520,4 +509,4 @@ if __name__ == '__main__':
         args.wind_power_curve_file
     )
 
-    power_generation.run(args.include_temperature)
+    power_generation.run()
